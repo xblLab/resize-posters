@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
-    <title>Series — Pure Dark 16</title>
-    <!-- template-id: 16 preset-bg: #5c5240 (dark series, default white title) -->
+    <title>Series — Pure Dark 01</title>
+    <!-- template-id: 6 preset-bg: #1B4A6B (dark series, default white title) -->
     <style>
         * {
             margin: 0;
@@ -26,7 +26,7 @@
             --screen-width: 92.99%;
             --screen-height: 92.96%;
             --screen-radius: 4.2%;
-            --poster-bg: #5c5240;
+            --poster-bg: #1B4A6B;
             --title-color: #ffffff;
         }
 
@@ -159,7 +159,7 @@
         const params = new URLSearchParams(window.location.search);
         const imageUrl = params.get('image');
         const title = params.get('title') || '应用标题应用标题应用标题应用标题应用标题应用标题';
-        const bg = params.get('bg') || '#5c5240';
+        const bg = params.get('bg') || '#1B4A6B';
         const titleColorParam = params.get('titleColor') || params.get('title_color');
 
         document.getElementById('title-text').textContent = title;

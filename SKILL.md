@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字 `1`–`20` 选预设（`1`–`10` 浅色 `pure-color`，`11`–`20` 中深 `pure-color-dark`、默认白字；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/15.html`；可选 `--bg`、`--title-color` 覆盖预设。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`blur-gradient-light/03.html`；可选 `--bg`、`--title-color` 覆盖预设。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -105,7 +105,7 @@ python3 -m http.server 8765
 参数说明：
 
 - `-i, --image`: 输入图片路径（必需）
-- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`），或 **registry 中的数字编号** `1`–`20`（见下表与 `templates/registry.json`）。默认 `default.html`
+- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`、`blur-gradient-light/01.html`），或 **registry 中的数字编号** `1`–`20`（见下表与 `templates/registry.json`）。默认 `default.html`
 - `-o, --output`: 输出图片路径，默认 `output/<输入图片名>_rendered.jpg`
 - `--title`: 模板中的标题文字
 - `--subtitle`: 模板中的副标题文字
@@ -113,43 +113,59 @@ python3 -m http.server 8765
 - `--title-color`: 标题颜色（如 `#f5f5f7`）；不传则由模板按背景亮度自动选深/浅字
 - `--port`: 本地服务器端口，默认 8765
 
-### 模板编号表（纯色 + 手机框，`pure-color/NN.html`）
+### 模板编号表（纯色 + 手机框，`pure-color/01.html`–`05.html`）
+
+色相拉开（蓝 / 暖黄 / 绿 / 粉 / 紫），避免近邻套色糊成一片。
 
 | 编号 | 文件 | 预设背景 | 说明 |
 |------|------|----------|------|
-| 1 | `pure-color/01.html` | `#E8ECF4` | 雾蓝灰 |
-| 2 | `pure-color/02.html` | `#F2F0EB` | 燕麦白 |
-| 3 | `pure-color/03.html` | `#E3F2FD` | 冰川蓝 |
-| 4 | `pure-color/04.html` | `#E8F5E9` | 雾青绿 |
-| 5 | `pure-color/05.html` | `#FCE4EC` | 浅蔷薇 |
-| 6 | `pure-color/06.html` | `#FFF8E7` | 奶油杏 |
-| 7 | `pure-color/07.html` | `#EDE7F6` | 雾紫 |
-| 8 | `pure-color/08.html` | `#E0F7FA` | 浅青 |
-| 9 | `pure-color/09.html` | `#F3E5F5` | 丁香紫 |
-| 10 | `pure-color/10.html` | `#EAF2FB` | 晴空蓝 |
+| 1 | `pure-color/01.html` | `#E3F2FD` | 冰蓝 |
+| 2 | `pure-color/02.html` | `#FFF8E6` | 蜜杏 |
+| 3 | `pure-color/03.html` | `#E8F5E9` | 薄荷绿 |
+| 4 | `pure-color/04.html` | `#FCE4EC` | 蔷薇粉 |
+| 5 | `pure-color/05.html` | `#EDE7F6` | 丁香紫 |
 
-### 模板编号表（中深色 + 白字默认，`pure-color-dark/{11–20}.html`）
+### 模板编号表（中深色 + 白字默认，`pure-color-dark/01.html`–`05.html`）
 
-色相偏中深、避免近黑一团；默认标题为白色，`--bg` 改为浅色时会自动切深色字。文件名与 registry 编号一致。
+色相拉开（蓝 / 红 / 绿 / 紫 / 棕）；默认标题为白色，`--bg` 改为浅色时会自动切深色字。
 
 | 编号 | 文件 | 预设背景 | 说明 |
 |------|------|----------|------|
-| 11 | `pure-color-dark/11.html` | `#3d5a73` | 灰蓝 |
-| 12 | `pure-color-dark/12.html` | `#4a454f` | 烟紫灰 |
-| 13 | `pure-color-dark/13.html` | `#2d5a7a` | 钢蓝 |
-| 14 | `pure-color-dark/14.html` | `#3d5c4a` | 墨绿 |
-| 15 | `pure-color-dark/15.html` | `#6b4050` | 干红 |
-| 16 | `pure-color-dark/16.html` | `#5c5240` | 暖褐 |
-| 17 | `pure-color-dark/17.html` | `#4a3d6b` | 靛紫 |
-| 18 | `pure-color-dark/18.html` | `#2d5c5c` | 墨青 |
-| 19 | `pure-color-dark/19.html` | `#5a4a3d` | 棕褐 |
-| 20 | `pure-color-dark/20.html` | `#354a6b` | 靛蓝 |
+| 6 | `pure-color-dark/01.html` | `#1B4A6B` | 钢蓝 |
+| 7 | `pure-color-dark/02.html` | `#6B2D3C` | 酒红 |
+| 8 | `pure-color-dark/03.html` | `#1F4D3A` | 松绿 |
+| 9 | `pure-color-dark/04.html` | `#4A2D6B` | 茄紫 |
+| 10 | `pure-color-dark/05.html` | `#6B4A2A` | 古铜 |
+
+### 模板编号表（浅色模糊渐变 + 手机框，`blur-gradient-light/01.html`–`05.html`）
+
+三层大色块 + `filter: blur`，底为浅色；默认标题深色字，`--bg` 为深色 hex 时会自动切白字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 11 | `blur-gradient-light/01.html` | `#EEF0F8` | 雾紫蓝渐变 |
+| 12 | `blur-gradient-light/02.html` | `#F0F7F3` | 薄荷杏渐变 |
+| 13 | `blur-gradient-light/03.html` | `#F2F8FF` | 晴空渐变 |
+| 14 | `blur-gradient-light/04.html` | `#FBF5F8` | 蔷薇渐变 |
+| 15 | `blur-gradient-light/05.html` | `#F5FBFC` | 青柠渐变 |
+
+### 模板编号表（深色模糊渐变 + 手机框，`blur-gradient-dark/01.html`–`05.html`）
+
+深色底 + 高饱和色块经强模糊叠色；默认标题白字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 16 | `blur-gradient-dark/01.html` | `#12141E` | 夜蓝紫渐变 |
+| 17 | `blur-gradient-dark/02.html` | `#0D1612` | 森绿渐变 |
+| 18 | `blur-gradient-dark/03.html` | `#141016` | 酒红渐变 |
+| 19 | `blur-gradient-dark/04.html` | `#0A0E18` | 靛青渐变 |
+| 20 | `blur-gradient-dark/05.html` | `#131210` | 琥珀渐变 |
 
 权威数据与后续扩展：`templates/registry.json`。
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底、顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；浅色 10 套 + 中深 10 套，编号与 `registry.json` 一致）。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 
@@ -230,8 +246,8 @@ python3 scripts/render_with_template.py -i shot.jpg -t series_phone.html --title
 # 按编号使用浅色预设（等价于 -t pure-color/03.html）
 python3 scripts/render_with_template.py -i shot.jpg -t 3 --title "功能亮点" -o ~/Desktop/poster.jpg
 
-# 按编号使用中深预设、默认白字（等价于 -t pure-color-dark/15.html）
-python3 scripts/render_with_template.py -i shot.jpg -t 15 --title "功能亮点" -o ~/Desktop/poster_dark.jpg
+# 按编号使用中深预设、默认白字（等价于 -t pure-color-dark/01.html）
+python3 scripts/render_with_template.py -i shot.jpg -t 6 --title "功能亮点" -o ~/Desktop/poster_dark.jpg
 
 # 完整参数
 python3 scripts/render_with_template.py \

@@ -3,20 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
-    <title>Series — Pure 09</title>
-    <!-- template-id: 9 preset-bg: #F3E5F5 -->
+    <title>Series — Blur Dark 02</title>
+    <!-- template-id: 17 preset-bg: #0D1612 -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            /*
-             * Mate70-Pro.png：手机 opaque 外接框约 (3000,860)–(7020,9140) → 4021×8281（相对 10000²）。
-             * 透明屏区 (3121–6859)×(1322–9019) 相对该外接框的比例（需与下方 frame 平移/缩放用同一组数）。
-             */
             --phone-w: 4021;
             --phone-h: 8281;
             --phone-l: 3000;
@@ -26,12 +18,13 @@
             --screen-width: 92.99%;
             --screen-height: 92.96%;
             --screen-radius: 4.2%;
-            --poster-bg: #F3E5F5;
+            --poster-bg: #0D1612;
+            --blob-1: #1f8a5a;
+            --blob-2: #2d6b4a;
+            --blob-3: #0d5c40;
         }
 
-        html {
-            background: var(--poster-bg);
-        }
+        html { background: var(--poster-bg); }
 
         body {
             width: 1080px;
@@ -42,15 +35,58 @@
             background: var(--poster-bg);
         }
 
+        .bg-blur {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-blur .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(108px);
+            -webkit-filter: blur(108px);
+            opacity: 0.76;
+        }
+
+        .bg-blur .blob-1 {
+            width: 78%;
+            height: 68%;
+            left: -15%;
+            top: 5%;
+            background: var(--blob-1);
+        }
+
+        .bg-blur .blob-2 {
+            width: 72%;
+            height: 58%;
+            right: -24%;
+            bottom: 8%;
+            background: var(--blob-2);
+        }
+
+        .bg-blur .blob-3 {
+            width: 68%;
+            height: 62%;
+            left: 20%;
+            top: -14%;
+            background: var(--blob-3);
+        }
+
         .poster {
             width: 100%;
             height: 100%;
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             padding: 48px 40px 56px;
             box-sizing: border-box;
+            background: transparent;
         }
 
         .title {
@@ -73,7 +109,6 @@
             line-clamp: 2;
         }
 
-        /* 占满标题下方区域，手机块垂直居中，避免「挤在上半屏」 */
         .phone-wrap {
             position: relative;
             top: 72px;
@@ -85,9 +120,6 @@
             justify-content: center;
         }
 
-        /*
-         * 只显示手机外接框：整图缩放后平移，使 (phone-l,phone-t)–(phone+w,phone+h) 铺满 .phone-crop。
-         */
         .phone-crop {
             position: relative;
             width: 63.8%;
@@ -108,7 +140,6 @@
             user-select: none;
         }
 
-        /* 截图在下；坐标相对 .phone-crop（即手机实体） */
         .screen-slot {
             position: absolute;
             z-index: 1;
@@ -131,39 +162,30 @@
     </style>
 </head>
 <body>
+    <div class="bg-blur" aria-hidden="true">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
     <div class="poster" id="poster-root">
         <h1 class="title" id="title-text">应用标题</h1>
         <div class="phone-wrap">
             <div class="phone-crop">
                 <div class="screen-slot">
-                    <img
-                        id="target-image"
-                        src="/assets/screenshots/default_screenshot.jpg"
-                        alt=""
-                        crossorigin="anonymous"
-                    />
+                    <img id="target-image" src="/assets/screenshots/default_screenshot.jpg" alt="" crossorigin="anonymous" />
                 </div>
-                <img
-                    class="frame"
-                    src="/assets/devices/mate70pro/Mate70-Pro.png"
-                    alt=""
-                    width="10000"
-                    height="10000"
-                />
+                <img class="frame" src="/assets/devices/mate70pro/Mate70-Pro.png" alt="" width="10000" height="10000" />
             </div>
         </div>
     </div>
-
     <script>
         const params = new URLSearchParams(window.location.search);
         const imageUrl = params.get('image');
         const title = params.get('title') || '应用标题应用标题应用标题应用标题应用标题应用标题';
-        const bg = params.get('bg') || '#F3E5F5';
+        const bg = params.get('bg') || '#0D1612';
         const titleColorParam = params.get('titleColor') || params.get('title_color');
-
         document.getElementById('title-text').textContent = title;
         document.documentElement.style.setProperty('--poster-bg', bg);
-
         const lightBg = (function () {
             const m = /^#?([0-9a-f]{6})$/i.exec(bg.trim());
             if (!m) return false;
@@ -172,27 +194,16 @@
             const y = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
             return y > 0.72;
         })();
-
         const root = document.getElementById('poster-root');
         if (titleColorParam) {
             root.style.setProperty('--title-color', decodeURIComponent(titleColorParam));
         } else if (lightBg) {
             root.style.setProperty('--title-color', '#1a1a1e');
         }
-
         const imgEl = document.getElementById('target-image');
-        if (imageUrl) {
-            imgEl.src = imageUrl;
-        }
-
-        imgEl.onload = function () {
-            window.__IMAGE_LOADED__ = true;
-            if (window.__onImageLoaded) window.__onImageLoaded();
-        };
-        imgEl.onerror = function () {
-            window.__IMAGE_ERROR__ = true;
-            if (window.__onImageError) window.__onImageError();
-        };
+        if (imageUrl) imgEl.src = imageUrl;
+        imgEl.onload = function () { window.__IMAGE_LOADED__ = true; if (window.__onImageLoaded) window.__onImageLoaded(); };
+        imgEl.onerror = function () { window.__IMAGE_ERROR__ = true; if (window.__onImageError) window.__onImageError(); };
     </script>
 </body>
 </html>
