@@ -93,13 +93,14 @@ python3 scripts/render_with_template.py \
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html`（纯色底、顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框，截图在透明屏区下、机框在上）。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 
-- `image`: 图片的 base64 data URL（自动编码）
+- `image`: 输入图在本地 HTTP 下的路径（脚本会将 `-i` 复制到 `.render_cache/` 再传入，避免超长 URL 导致 414）
 - `title`: 标题文字
 - `subtitle`: 副标题文字
+- `bg`（可选）：背景色，如 `#1a1a2e`（`series_phone.html` 等纯色底模板使用）
 
 **示例模板结构** (`templates/default.html`)：
 
@@ -125,7 +126,7 @@ python3 scripts/render_with_template.py \
   <script>
     // 从 URL 参数获取数据
     const params = new URLSearchParams(window.location.search);
-    document.getElementById('target-image').src = params.get('image');
+    document.getElementById('target-image').src = params.get('image') || '';
     document.getElementById('title-text').textContent = params.get('title');
     document.getElementById('subtitle-text').textContent = params.get('subtitle');
 
@@ -165,6 +166,9 @@ python3 -m playwright install chromium
 ```bash
 # 基础渲染（uv：把 python3 换成 uv run python）
 python3 scripts/render_with_template.py -i photo.jpg --title "精选照片"
+
+# 系列模板：纯色底 + 标题 + 手机框（`--bg` 可选）
+python3 scripts/render_with_template.py -i shot.jpg -t series_phone.html --title "功能亮点" --bg "#0d0d12" -o ~/Desktop/poster.jpg
 
 # 完整参数
 python3 scripts/render_with_template.py \

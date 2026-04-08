@@ -20,6 +20,9 @@ build/
 *~
 .DS_Store
 
+# 渲染管线临时缓存（输入图副本）
+.render_cache/
+
 # Project output directories
 output/
 out/

@@ -4,7 +4,7 @@
 基本流程：
 1. 启动本地 HTTP 服务器
 2. 使用 Playwright 打开浏览器
-3. 加载 HTML 模板（通过 URL 参数传入图片路径）
+3. 加载 HTML 模板（通过 URL 参数传入图片的 HTTP 路径；输入会先复制到 .render_cache/ 避免超长 URL）
 4. 等待渲染完成后截图
 5. 输出 1080x1920 的图片
 """
@@ -12,13 +12,13 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import http.server
-import mimetypes
+import shutil
 import socketserver
 import sys
 import threading
 import time
+import uuid
 from pathlib import Path
 from urllib.parse import quote
 
@@ -29,6 +29,9 @@ TARGET_H = 1920
 SKILL_ROOT = Path(__file__).parent.parent.resolve()
 TEMPLATE_DIR = SKILL_ROOT / "templates"
 DEFAULT_TEMPLATE = "default.html"
+# 静态资源根目录：需能访问 templates/ 与 assets/（如系列手机框模板）
+HTTP_ROOT = SKILL_ROOT
+RENDER_CACHE_DIR = SKILL_ROOT / ".render_cache"
 
 
 class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -65,16 +68,14 @@ def start_server(directory: Path, port: int = 0) -> tuple[int, socketserver.TCPS
     return actual_port, server
 
 
-def image_to_data_url(image_path: Path) -> str:
-    """将图片转换为 base64 data URL"""
-    mime_type, _ = mimetypes.guess_type(str(image_path))
-    if not mime_type:
-        mime_type = "image/jpeg"
-
-    with open(image_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-
-    return f"data:{mime_type};base64,{encoded}"
+def copy_image_to_serve_path(image_path: Path) -> str:
+    """复制输入图到 HTTP 根下短路径，避免 base64 塞进 URL 导致 414。"""
+    RENDER_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    suffix = image_path.suffix.lower() or ".jpg"
+    dest = RENDER_CACHE_DIR / f"{uuid.uuid4().hex}{suffix}"
+    shutil.copy2(image_path, dest)
+    rel = dest.relative_to(SKILL_ROOT)
+    return "/" + rel.as_posix()
 
 
 def render_with_playwright(
@@ -84,6 +85,7 @@ def render_with_playwright(
     server_port: int,
     title: str = "",
     subtitle: str = "",
+    bg: str = "",
 ) -> None:
     """使用 Playwright 渲染页面并截图"""
 
@@ -92,18 +94,17 @@ def render_with_playwright(
         print(f"模板不存在: {template_file}", file=sys.stderr)
         sys.exit(1)
 
-    # 构建 URL 参数
-    # 使用 base64 data URL 避免跨域问题
-    image_data_url = image_to_data_url(image_path)
-    encoded_image = quote(image_data_url, safe='')
-
-    params = f"image={encoded_image}"
+    # 构建 URL 参数（短路径，同机 HTTP 提供文件，避免超长 data URL 触发 414）
+    image_serve_path = copy_image_to_serve_path(image_path)
+    params = f"image={quote(image_serve_path, safe='/')}"
     if title:
         params += f"&title={quote(title)}"
     if subtitle:
         params += f"&subtitle={quote(subtitle)}"
+    if bg:
+        params += f"&bg={quote(bg)}"
 
-    url = f"http://127.0.0.1:{server_port}/{template_name}?{params}"
+    url = f"http://127.0.0.1:{server_port}/templates/{template_name}?{params}"
 
     with sync_playwright() as p:
         # 启动浏览器
@@ -184,6 +185,12 @@ def main() -> None:
         default=8765,
         help="本地服务器端口（默认: 8765，0 表示随机端口）",
     )
+    parser.add_argument(
+        "--bg",
+        type=str,
+        default="",
+        help="背景色（十六进制，如 #1a1a2e；部分模板如 series_phone 使用）",
+    )
     args = parser.parse_args()
 
     image_path = args.image.resolve()
@@ -198,9 +205,9 @@ def main() -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / f"{image_path.stem}_rendered.jpg"
 
-    # 启动服务器
+    # 启动服务器（根目录为 skill 根，便于模板引用 /assets/）
     print(f"启动本地服务器...")
-    port, server = start_server(TEMPLATE_DIR, args.port)
+    port, server = start_server(HTTP_ROOT, args.port)
     print(f"服务器运行在 http://127.0.0.1:{port}")
 
     try:
@@ -212,6 +219,7 @@ def main() -> None:
             server_port=port,
             title=args.title,
             subtitle=args.subtitle,
+            bg=args.bg,
         )
         print(f"渲染完成: {output_path}")
     finally:
