@@ -58,7 +58,7 @@
             margin: 0 auto;
             overflow: hidden;
             position: relative;
-            background: #000;
+            background: #1a1a20;
             border-radius: 8px;
         }
         .card-preview iframe {
@@ -72,13 +72,28 @@
             transform-origin: top left;
             pointer-events: none;
         }
+        .card-preview-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            font-size: 0.8rem;
+            color: #888;
+            line-height: 1.4;
+            text-align: center;
+        }
+        .card-preview.is-loaded .card-preview-placeholder {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <h1>上架图模板画廊</h1>
     <p class="hint">
         数据来自同目录 <code>registry.json</code>。请在本 skill 根目录启动本地 HTTP（如 <code>python3 -m http.server 8765</code> 或 <code>scripts/preview_gallery.py</code>），再打开本页。
-        勿用 <code>file://</code> 直接打开，否则无法加载 JSON。
+        勿用 <code>file://</code> 直接打开，否则无法加载 JSON。预览仅在卡片进入视口附近时加载，滚出视口后卸载以节省性能。
     </p>
     <div class="err" id="err"></div>
     <div class="template-list" id="template-list"></div>
@@ -97,7 +112,7 @@
             }
 
             function escAttr(s) {
-                return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             }
 
             function card(item) {
@@ -105,10 +120,51 @@
                 const u = escAttr(url);
                 return (
                     '<article class="card">' +
-                    '<div class="card-id">编号 ' + item.id + '</div>' +
-                    '<div class="card-preview"><iframe src="' + u + '" title="模板' + item.id + '"></iframe></div>' +
+                    '<div class="card-id">编号 ' + item.id + ' · ' + escAttr(item.label || '') + '</div>' +
+                    '<div class="card-preview" data-preview-url="' + u + '" data-template-id="' + String(item.id) + '">' +
+                    '<div class="card-preview-placeholder">划入此区域后加载预览</div>' +
+                    '</div>' +
                     '</article>'
                 );
+            }
+
+            function mountIframe(container) {
+                if (container.querySelector('iframe')) return;
+                var raw = container.getAttribute('data-preview-url');
+                if (!raw) return;
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('src', raw.replace(/&amp;/g, '&'));
+                iframe.setAttribute('title', '模板 ' + (container.getAttribute('data-template-id') || ''));
+                container.appendChild(iframe);
+                container.classList.add('is-loaded');
+            }
+
+            function unmountIframe(container) {
+                var iframe = container.querySelector('iframe');
+                if (iframe) iframe.remove();
+                container.classList.remove('is-loaded');
+            }
+
+            function setupLazyPreviews(root) {
+                var previews = root.querySelectorAll('.card-preview[data-preview-url]');
+                if (!previews.length || !('IntersectionObserver' in window)) {
+                    previews.forEach(function (el) { mountIframe(el); });
+                    return;
+                }
+                var io = new IntersectionObserver(
+                    function (entries) {
+                        entries.forEach(function (entry) {
+                            var el = entry.target;
+                            if (entry.isIntersecting) {
+                                mountIframe(el);
+                            } else {
+                                unmountIframe(el);
+                            }
+                        });
+                    },
+                    { root: null, rootMargin: '120px 0px 240px 0px', threshold: 0 }
+                );
+                previews.forEach(function (el) { io.observe(el); });
             }
 
             fetch('./registry.json', { cache: 'no-store' })
@@ -117,12 +173,14 @@
                     return r.json();
                 })
                 .then(function (data) {
-                    const list = (data.templates || []).slice().sort(function (a, b) {
+                    var list = (data.templates || []).slice().sort(function (a, b) {
                         return (a.id || 0) - (b.id || 0);
                     });
-                    let html = '';
-                    for (let i = 0; i < list.length; i++) html += card(list[i]);
-                    document.getElementById('template-list').innerHTML = html || '<p>registry 中无模板条目。</p>';
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) html += card(list[i]);
+                    var mount = document.getElementById('template-list');
+                    mount.innerHTML = html || '<p>registry 中无模板条目。</p>';
+                    setupLazyPreviews(mount);
                 })
                 .catch(function (e) {
                     document.getElementById('err').textContent =
