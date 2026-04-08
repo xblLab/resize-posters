@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`grid-array-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`grid-array-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -209,11 +209,35 @@ python3 -m http.server 8765
 | 39 | `grid-array-dark/04.html` | `#0E0818` | 午夜网格 |
 | 40 | `grid-array-dark/05.html` | `#121008` | 琥珀网格 |
 
+### 模板编号表（浅色 Triangles Mosaic + 手机框，`triangles-mosaic-light/01.html`–`05.html`）
+
+背景由 [color4bg](https://github.com/winterx/color4bg.js) 的 `TrianglesMosaicBg`（`loop: false`），本地脚本为 `assets/vendor/color4bg/TrianglesMosaicBg.min.js`；配色与编号 31–35 同系，默认标题深色字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 41 | `triangles-mosaic-light/01.html` | `#EEF4FF` | 冰雾三角拼 |
+| 42 | `triangles-mosaic-light/02.html` | `#FFF6ED` | 蜜杏三角拼 |
+| 43 | `triangles-mosaic-light/03.html` | `#EEF8F2` | 薄荷三角拼 |
+| 44 | `triangles-mosaic-light/04.html` | `#FFF0F5` | 蔷薇三角拼 |
+| 45 | `triangles-mosaic-light/05.html` | `#F3EEFE` | 丁香三角拼 |
+
+### 模板编号表（深色 Triangles Mosaic + 手机框，`triangles-mosaic-dark/01.html`–`05.html`）
+
+配色与编号 36–40 同系；默认标题白字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 46 | `triangles-mosaic-dark/01.html` | `#0C1424` | 深海三角拼 |
+| 47 | `triangles-mosaic-dark/02.html` | `#140C18` | 酒红三角拼 |
+| 48 | `triangles-mosaic-dark/03.html` | `#081210` | 墨绿三角拼 |
+| 49 | `triangles-mosaic-dark/04.html` | `#0E0818` | 午夜三角拼 |
+| 50 | `triangles-mosaic-dark/05.html` | `#121008` | 琥珀三角拼 |
+
 权威数据与后续扩展：`templates/registry.json`。
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）、`triangles-mosaic-light/`、`triangles-mosaic-dark/`（color4bg TrianglesMosaic）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 
