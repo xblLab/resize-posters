@@ -36,9 +36,10 @@ RENDER_CACHE_DIR = SKILL_ROOT / ".render_cache"
 REGISTRY_PATH = TEMPLATE_DIR / "registry.json"
 
 
-def resolve_template_path(template_arg: str) -> str:
-    """将 -t 参数解析为 templates/ 下的相对路径。纯数字时查 registry.json。"""
+def resolve_template(template_arg: str) -> tuple[str, dict[str, str]]:
+    """将 -t 参数解析为 (templates/ 下相对路径, registry 附加查询参数如 url_params)。"""
     s = template_arg.strip()
+    extra: dict[str, str] = {}
     if s.isdigit():
         if not REGISTRY_PATH.is_file():
             print(f"模板编号已指定但缺少注册表: {REGISTRY_PATH}", file=sys.stderr)
@@ -47,10 +48,15 @@ def resolve_template_path(template_arg: str) -> str:
         tid = int(s)
         for item in data.get("templates", []):
             if item.get("id") == tid:
-                return str(item["path"])
+                path = str(item["path"])
+                up = item.get("url_params")
+                if isinstance(up, dict):
+                    for k, v in up.items():
+                        extra[str(k)] = str(v)
+                return path, extra
         print(f"未知模板编号: {tid}（请检查 templates/registry.json）", file=sys.stderr)
         sys.exit(1)
-    return s
+    return s, extra
 
 
 class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -106,6 +112,7 @@ def render_with_playwright(
     subtitle: str = "",
     bg: str = "",
     title_color: str = "",
+    extra_query: dict[str, str] | None = None,
 ) -> None:
     """使用 Playwright 渲染页面并截图"""
 
@@ -125,6 +132,9 @@ def render_with_playwright(
         params += f"&bg={quote(bg)}"
     if title_color:
         params += f"&titleColor={quote(title_color)}"
+    merged = dict(extra_query or {})
+    for k, v in merged.items():
+        params += f"&{quote(str(k), safe='')}={quote(str(v), safe='')}"
 
     url = f"http://127.0.0.1:{server_port}/templates/{template_name}?{params}"
 
@@ -182,7 +192,7 @@ def main() -> None:
         default=DEFAULT_TEMPLATE,
         help=(
             f"模板：相对 templates/ 的文件名（如 series_phone.html、pure-color/01.html），"
-            f"或 registry 中的数字编号 1–40（见 templates/registry.json）（默认: {DEFAULT_TEMPLATE}）"
+            f"或 registry 中的数字编号（见 templates/registry.json）（默认: {DEFAULT_TEMPLATE}）"
         ),
     )
     parser.add_argument(
@@ -242,7 +252,7 @@ def main() -> None:
     port, server = start_server(HTTP_ROOT, args.port)
     print(f"服务器运行在 http://127.0.0.1:{port}")
 
-    template_name = resolve_template_path(args.template)
+    template_name, registry_extra = resolve_template(args.template)
 
     try:
         print(f"正在渲染: {image_path.name}（模板: {template_name}）")
@@ -255,6 +265,7 @@ def main() -> None:
             subtitle=args.subtitle,
             bg=args.bg,
             title_color=args.title_color,
+            extra_query=registry_extra,
         )
         print(f"渲染完成: {output_path}")
     finally:

@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`grid-array-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -105,7 +105,7 @@ python3 -m http.server 8765
 参数说明：
 
 - `-i, --image`: 输入图片路径（必需）
-- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`、`blur-gradient-light/01.html`），或 **registry 中的数字编号** `1`–`40`（见下表与 `templates/registry.json`）。默认 `default.html`
+- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`、`linear-gradient-light/01.html`），或 **registry 中的数字编号**（见下表与 `templates/registry.json`）。默认 `default.html`
 - `-o, --output`: 输出图片路径，默认 `output/<输入图片名>_rendered.jpg`
 - `--title`: 模板中的标题文字
 - `--subtitle`: 模板中的副标题文字
@@ -233,18 +233,42 @@ python3 -m http.server 8765
 | 49 | `triangles-mosaic-dark/04.html` | `#0E0818` | 午夜三角拼 |
 | 50 | `triangles-mosaic-dark/05.html` | `#121008` | 琥珀三角拼 |
 
+### 模板编号表（浅色 CSS 线性渐变 + 手机框，`linear-gradient-light/01.html`–`05.html`）
+
+纯 `linear-gradient`；默认深色标题；传 URL `bg` 时改为纯色底（与 `pure-color` 系列一致）。
+
+| 编号 | 文件 | 预设 `--bg`（亮度参考） | 说明 |
+|------|------|------------------------|------|
+| 51 | `linear-gradient-light/01.html` | `#FFDAB9` | 晨曦 |
+| 52 | `linear-gradient-light/02.html` | `#B8D4E8` | 冰川 |
+| 53 | `linear-gradient-light/03.html` | `#E8D5F2` | 丁香 |
+| 54 | `linear-gradient-light/04.html` | `#C8E6C9` | 春芽 |
+| 55 | `linear-gradient-light/05.html` | `#FFCDD2` | 珊瑚 |
+
+### 模板编号表（深色 CSS 线性渐变 + 手机框，`linear-gradient-dark/01.html`–`05.html`）
+
+默认浅色标题；传 URL `bg` 为浅色 hex 时自动切深色字。
+
+| 编号 | 文件 | 预设 `--bg`（亮度参考） | 说明 |
+|------|------|------------------------|------|
+| 56 | `linear-gradient-dark/01.html` | `#161B22` | 午夜 |
+| 57 | `linear-gradient-dark/02.html` | `#1A2F4A` | 深海 |
+| 58 | `linear-gradient-dark/03.html` | `#3D1428` | 酒韵 |
+| 59 | `linear-gradient-dark/04.html` | `#0D3D3A` | 松涛 |
+| 60 | `linear-gradient-dark/05.html` | `#2D1B4E` | 夜紫 |
+
 权威数据与后续扩展：`templates/registry.json`。
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）、`triangles-mosaic-light/`、`triangles-mosaic-dark/`（color4bg TrianglesMosaic）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`linear-gradient-light/`、`linear-gradient-dark/`（CSS 线性渐变底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）、`triangles-mosaic-light/`、`triangles-mosaic-dark/`（color4bg TrianglesMosaic）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 
 - `image`: 输入图在本地 HTTP 下的路径（脚本会将 `-i` 复制到 `.render_cache/` 再传入，避免超长 URL 导致 414）
 - `title`: 标题文字
 - `subtitle`: 副标题文字
-- `bg`（可选）：背景色，如 `#1a1a2e`（纯色底模板使用；不传则用该模板 `:root` / JS 默认值）
+- `bg`（可选）：背景色，如 `#1a1a2e`（多数模板作纯色底；`linear-gradient-*` 模板在传入时覆盖为纯色，不传则保留该文件内建渐变）
 - `titleColor` 或 `title_color`（可选）：标题色；不传则浅色背景时自动用深色字（与 CLI `--title-color` 对应）
 
 **示例模板结构** (`templates/default.html`)：
@@ -314,6 +338,9 @@ python3 scripts/render_with_template.py -i photo.jpg --title "精选照片"
 
 # 系列模板：纯色底 + 标题 + 手机框（`--bg` / `--title-color` 可选）
 python3 scripts/render_with_template.py -i shot.jpg -t series_phone.html --title "功能亮点" --bg "#0d0d12" -o ~/Desktop/poster.jpg
+
+# 线性渐变底 + 手机框（`-t 53` 等价于 `linear-gradient-light/03.html`）
+python3 scripts/render_with_template.py -i shot.jpg -t linear-gradient-light/03.html --title "功能亮点" -o ~/Desktop/poster_grad.jpg
 
 # 按编号使用浅色预设（等价于 -t pure-color/03.html）
 python3 scripts/render_with_template.py -i shot.jpg -t 3 --title "功能亮点" -o ~/Desktop/poster.jpg

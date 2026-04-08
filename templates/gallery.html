@@ -103,11 +103,17 @@
             const PREVIEW_TITLE = '预览标题';
             const DEFAULT_IMAGE = '/assets/screenshots/default_screenshot.jpg';
 
-            function tmplUrl(path) {
+            function tmplUrl(item) {
+                const path = item.path || '';
                 const q = new URLSearchParams({
                     title: PREVIEW_TITLE,
                     image: DEFAULT_IMAGE
                 });
+                if (item.url_params && typeof item.url_params === 'object') {
+                    Object.keys(item.url_params).forEach(function (k) {
+                        q.set(k, String(item.url_params[k]));
+                    });
+                }
                 return '/templates/' + path.replace(/^\//, '') + '?' + q.toString();
             }
 
@@ -116,7 +122,7 @@
             }
 
             function card(item) {
-                const url = tmplUrl(item.path);
+                const url = tmplUrl(item);
                 const u = escAttr(url);
                 return (
                     '<article class="card">' +
