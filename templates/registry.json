@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark。",
+  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark；31–35 浅色 grid-array-light（color4bg Grid Array）；36–40 深色 grid-array-dark。",
   "templates": [
     {
       "id": 1,
@@ -180,6 +180,66 @@
       "id": 30,
       "path": "abstract-shape-dark/05.html",
       "label": "琥珀抽象形",
+      "default_bg": "#121008"
+    },
+    {
+      "id": 31,
+      "path": "grid-array-light/01.html",
+      "label": "冰雾网格",
+      "default_bg": "#EEF4FF"
+    },
+    {
+      "id": 32,
+      "path": "grid-array-light/02.html",
+      "label": "蜜杏网格",
+      "default_bg": "#FFF6ED"
+    },
+    {
+      "id": 33,
+      "path": "grid-array-light/03.html",
+      "label": "薄荷网格",
+      "default_bg": "#EEF8F2"
+    },
+    {
+      "id": 34,
+      "path": "grid-array-light/04.html",
+      "label": "蔷薇网格",
+      "default_bg": "#FFF0F5"
+    },
+    {
+      "id": 35,
+      "path": "grid-array-light/05.html",
+      "label": "丁香网格",
+      "default_bg": "#F3EEFE"
+    },
+    {
+      "id": 36,
+      "path": "grid-array-dark/01.html",
+      "label": "深海网格",
+      "default_bg": "#0C1424"
+    },
+    {
+      "id": 37,
+      "path": "grid-array-dark/02.html",
+      "label": "酒红网格",
+      "default_bg": "#140C18"
+    },
+    {
+      "id": 38,
+      "path": "grid-array-dark/03.html",
+      "label": "墨绿网格",
+      "default_bg": "#081210"
+    },
+    {
+      "id": 39,
+      "path": "grid-array-dark/04.html",
+      "label": "午夜网格",
+      "default_bg": "#0E0818"
+    },
+    {
+      "id": 40,
+      "path": "grid-array-dark/05.html",
+      "label": "琥珀网格",
       "default_bg": "#121008"
     }
   ]
