@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–10 浅色 pure-color；11–20 中深 pure-color-dark（默认白字）。",
+  "templates": [
+    {
+      "id": 1,
+      "path": "pure-color/01.html",
+      "label": "雾蓝灰",
+      "default_bg": "#E8ECF4"
+    },
+    {
+      "id": 2,
+      "path": "pure-color/02.html",
+      "label": "燕麦白",
+      "default_bg": "#F2F0EB"
+    },
+    {
+      "id": 3,
+      "path": "pure-color/03.html",
+      "label": "冰川蓝",
+      "default_bg": "#E3F2FD"
+    },
+    {
+      "id": 4,
+      "path": "pure-color/04.html",
+      "label": "雾青绿",
+      "default_bg": "#E8F5E9"
+    },
+    {
+      "id": 5,
+      "path": "pure-color/05.html",
+      "label": "浅蔷薇",
+      "default_bg": "#FCE4EC"
+    },
+    {
+      "id": 6,
+      "path": "pure-color/06.html",
+      "label": "奶油杏",
+      "default_bg": "#FFF8E7"
+    },
+    {
+      "id": 7,
+      "path": "pure-color/07.html",
+      "label": "雾紫",
+      "default_bg": "#EDE7F6"
+    },
+    {
+      "id": 8,
+      "path": "pure-color/08.html",
+      "label": "浅青",
+      "default_bg": "#E0F7FA"
+    },
+    {
+      "id": 9,
+      "path": "pure-color/09.html",
+      "label": "丁香紫",
+      "default_bg": "#F3E5F5"
+    },
+    {
+      "id": 10,
+      "path": "pure-color/10.html",
+      "label": "晴空蓝",
+      "default_bg": "#EAF2FB"
+    },
+    {
+      "id": 11,
+      "path": "pure-color-dark/11.html",
+      "label": "灰蓝",
+      "default_bg": "#3d5a73"
+    },
+    {
+      "id": 12,
+      "path": "pure-color-dark/12.html",
+      "label": "烟紫灰",
+      "default_bg": "#4a454f"
+    },
+    {
+      "id": 13,
+      "path": "pure-color-dark/13.html",
+      "label": "钢蓝",
+      "default_bg": "#2d5a7a"
+    },
+    {
+      "id": 14,
+      "path": "pure-color-dark/14.html",
+      "label": "墨绿",
+      "default_bg": "#3d5c4a"
+    },
+    {
+      "id": 15,
+      "path": "pure-color-dark/15.html",
+      "label": "干红",
+      "default_bg": "#6b4050"
+    },
+    {
+      "id": 16,
+      "path": "pure-color-dark/16.html",
+      "label": "暖褐",
+      "default_bg": "#5c5240"
+    },
+    {
+      "id": 17,
+      "path": "pure-color-dark/17.html",
+      "label": "靛紫",
+      "default_bg": "#4a3d6b"
+    },
+    {
+      "id": 18,
+      "path": "pure-color-dark/18.html",
+      "label": "墨青",
+      "default_bg": "#2d5c5c"
+    },
+    {
+      "id": 19,
+      "path": "pure-color-dark/19.html",
+      "label": "棕褐",
+      "default_bg": "#5a4a3d"
+    },
+    {
+      "id": 20,
+      "path": "pure-color-dark/20.html",
+      "label": "靛蓝",
+      "default_bg": "#354a6b"
+    }
+  ]
+}

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
-    <title>Series — Phone Frame</title>
+    <title>Series — Pure 09</title>
+    <!-- template-id: 9 preset-bg: #F3E5F5 -->
     <style>
         * {
             margin: 0;
@@ -25,7 +26,7 @@
             --screen-width: 92.99%;
             --screen-height: 92.96%;
             --screen-radius: 4.2%;
-            --poster-bg: #1a1a4b;
+            --poster-bg: #F3E5F5;
         }
 
         html {
@@ -157,7 +158,7 @@
         const params = new URLSearchParams(window.location.search);
         const imageUrl = params.get('image');
         const title = params.get('title') || '应用标题应用标题应用标题应用标题应用标题应用标题';
-        const bg = params.get('bg') || '#1a1a4b';
+        const bg = params.get('bg') || '#F3E5F5';
         const titleColorParam = params.get('titleColor') || params.get('title_color');
 
         document.getElementById('title-text').textContent = title;

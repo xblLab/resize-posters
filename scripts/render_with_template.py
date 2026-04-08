@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import http.server
+import json
 import shutil
 import socketserver
 import sys
@@ -32,6 +33,24 @@ DEFAULT_TEMPLATE = "default.html"
 # 静态资源根目录：需能访问 templates/ 与 assets/（如系列手机框模板）
 HTTP_ROOT = SKILL_ROOT
 RENDER_CACHE_DIR = SKILL_ROOT / ".render_cache"
+REGISTRY_PATH = TEMPLATE_DIR / "registry.json"
+
+
+def resolve_template_path(template_arg: str) -> str:
+    """将 -t 参数解析为 templates/ 下的相对路径。纯数字时查 registry.json。"""
+    s = template_arg.strip()
+    if s.isdigit():
+        if not REGISTRY_PATH.is_file():
+            print(f"模板编号已指定但缺少注册表: {REGISTRY_PATH}", file=sys.stderr)
+            sys.exit(1)
+        data = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+        tid = int(s)
+        for item in data.get("templates", []):
+            if item.get("id") == tid:
+                return str(item["path"])
+        print(f"未知模板编号: {tid}（请检查 templates/registry.json）", file=sys.stderr)
+        sys.exit(1)
+    return s
 
 
 class CORSHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -86,6 +105,7 @@ def render_with_playwright(
     title: str = "",
     subtitle: str = "",
     bg: str = "",
+    title_color: str = "",
 ) -> None:
     """使用 Playwright 渲染页面并截图"""
 
@@ -103,6 +123,8 @@ def render_with_playwright(
         params += f"&subtitle={quote(subtitle)}"
     if bg:
         params += f"&bg={quote(bg)}"
+    if title_color:
+        params += f"&titleColor={quote(title_color)}"
 
     url = f"http://127.0.0.1:{server_port}/templates/{template_name}?{params}"
 
@@ -158,7 +180,10 @@ def main() -> None:
         "--template",
         type=str,
         default=DEFAULT_TEMPLATE,
-        help=f"模板文件名（默认: {DEFAULT_TEMPLATE}）",
+        help=(
+            f"模板：相对 templates/ 的文件名（如 series_phone.html、pure-color/01.html），"
+            f"或 registry 中的数字编号 1–20（见 templates/registry.json）（默认: {DEFAULT_TEMPLATE}）"
+        ),
     )
     parser.add_argument(
         "-o",
@@ -189,7 +214,14 @@ def main() -> None:
         "--bg",
         type=str,
         default="",
-        help="背景色（十六进制，如 #1a1a2e；部分模板如 series_phone 使用）",
+        help="背景色（十六进制，如 #1a1a2e；覆盖模板预设；纯色系列模板见 registry）",
+    )
+    parser.add_argument(
+        "--title-color",
+        type=str,
+        default="",
+        dest="title_color",
+        help="标题颜色（十六进制，如 #f5f5f7；不传则由模板根据背景亮度自动决定）",
     )
     args = parser.parse_args()
 
@@ -210,16 +242,19 @@ def main() -> None:
     port, server = start_server(HTTP_ROOT, args.port)
     print(f"服务器运行在 http://127.0.0.1:{port}")
 
+    template_name = resolve_template_path(args.template)
+
     try:
-        print(f"正在渲染: {image_path.name}")
+        print(f"正在渲染: {image_path.name}（模板: {template_name}）")
         render_with_playwright(
             image_path=image_path,
-            template_name=args.template,
+            template_name=template_name,
             output_path=output_path,
             server_port=port,
             title=args.title,
             subtitle=args.subtitle,
             bg=args.bg,
+            title_color=args.title_color,
         )
         print(f"渲染完成: {output_path}")
     finally:

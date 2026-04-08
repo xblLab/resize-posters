@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
-    <title>Series — Phone Frame</title>
+    <title>Series — Pure Dark 17</title>
+    <!-- template-id: 17 preset-bg: #4a3d6b (dark series, default white title) -->
     <style>
         * {
             margin: 0;
@@ -25,7 +26,8 @@
             --screen-width: 92.99%;
             --screen-height: 92.96%;
             --screen-radius: 4.2%;
-            --poster-bg: #1a1a4b;
+            --poster-bg: #4a3d6b;
+            --title-color: #ffffff;
         }
 
         html {
@@ -61,7 +63,7 @@
             font-weight: 700;
             line-height: 1.2;
             letter-spacing: 0.02em;
-            color: var(--title-color, #f5f5f7);
+            color: var(--title-color, #ffffff);
             margin-top: 128px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -157,7 +159,7 @@
         const params = new URLSearchParams(window.location.search);
         const imageUrl = params.get('image');
         const title = params.get('title') || '应用标题应用标题应用标题应用标题应用标题应用标题';
-        const bg = params.get('bg') || '#1a1a4b';
+        const bg = params.get('bg') || '#4a3d6b';
         const titleColorParam = params.get('titleColor') || params.get('title_color');
 
         document.getElementById('title-text').textContent = title;
@@ -177,6 +179,8 @@
             root.style.setProperty('--title-color', decodeURIComponent(titleColorParam));
         } else if (lightBg) {
             root.style.setProperty('--title-color', '#1a1a1e');
+        } else {
+            root.style.setProperty('--title-color', '#ffffff');
         }
 
         const imgEl = document.getElementById('target-image');
