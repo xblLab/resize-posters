@@ -83,6 +83,25 @@ python3 scripts/render_with_template.py \
 
 使用 uv 时同上：将 `python3` 换为 `uv run python` 即可。
 
+### 预览所有模板（浏览器）
+
+`templates/gallery.html` 会读取 `templates/registry.json`，网格展示各编号模板（缩放 iframe）。**须通过 HTTP 访问**，勿用 `file://` 直接打开。
+
+在本 skill **根目录**任选一种方式：
+
+```bash
+# 方式 A：一键起服务并打印画廊地址（无 Playwright 依赖）
+python3 scripts/preview_gallery.py
+# 可选：python3 scripts/preview_gallery.py --port 9000
+```
+
+```bash
+# 方式 B：标准库静态服务
+python3 -m http.server 8765
+```
+
+浏览器打开：`http://127.0.0.1:<端口>/templates/gallery.html`（`preview_gallery.py` 默认端口 8765 时即 `http://127.0.0.1:8765/templates/gallery.html`）。
+
 参数说明：
 
 - `-i, --image`: 输入图片路径（必需）
