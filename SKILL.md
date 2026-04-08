@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -34,7 +34,7 @@ python3 <SKILL_ROOT>/scripts/resize_posts_1080x1920.py -i <IN> -o <OUT_DIR>
 uv run python <SKILL_ROOT>/scripts/resize_posts_1080x1920.py -i <IN> -o <OUT_DIR>
 ```
 
-**依赖**：Pillow。缺失时 `pip install pillow`，或用 uv 在对应环境中安装后再执行。
+**依赖**：Pillow。缺失时 `pip install pillow`，或在本 skill 根目录 `uv sync`（见 `pyproject.toml`）。若需 **HTML 模板渲染**（Playwright），请先执行 `scripts/ensure_render_deps.py`（先检测再装，见下文「依赖安装」）。
 
 ## 完成后告知用户
 
@@ -81,7 +81,7 @@ python3 scripts/render_with_template.py \
   --port 8765
 ```
 
-使用 uv 时同上：将 `python3` 换为 `uv run python` 即可。
+使用 uv 时：先在本 skill 根目录执行 `uv run python scripts/ensure_render_deps.py`，再将下文命令中的 `python3` 换为 `uv run python`。
 
 ### 预览所有模板（浏览器）
 
@@ -317,18 +317,30 @@ python3 -m http.server 8765
 
 ## 依赖安装
 
-HTML 模板渲染需要 Playwright 和 Chromium：
+HTML 模板渲染需要 Pillow、Playwright 与 Chromium。请使用 **`scripts/ensure_render_deps.py`**：先检测（import + Chromium 可执行文件），**仅在缺失时**再执行 `uv sync` 或 `playwright install chromium`；已全部就绪时不会重复安装。
+
+在 **skill 根目录**（与 `pyproject.toml` 同级）执行：
 
 ```bash
-# 使用 uv（推荐；在 skill 根目录或你的项目根目录执行）
-uv venv
-uv pip install playwright pillow
-uv run python -m playwright install chromium
-
-# 或使用 pip + 系统/当前环境的 python3
-pip install playwright pillow
-python3 -m playwright install chromium
+# 推荐：已安装 uv 时（优先读 pyproject.toml / uv.lock）
+uv run python scripts/ensure_render_deps.py
 ```
+
+未安装 `uv` 时，脚本会在本目录创建 `.venv` 并在检测失败时用 `pip` 补齐：
+
+```bash
+python3 scripts/ensure_render_deps.py
+```
+
+通过后，请用 **与检测一致** 的解释器跑渲染脚本，例如：
+
+```bash
+uv run python scripts/render_with_template.py -i photo.jpg --title "精选照片"
+```
+
+**说明**：自动化助手执行本 skill 时，应先跑 `ensure_render_deps.py` 再跑 `render_with_template.py`，不要无条件执行 `uv venv` + 全量 `pip install`。
+
+**仅目录缩放**（`resize_posts_1080x1920.py`）只需 Pillow；若已有 `uv`，`uv sync` 即可，无需 Playwright。
 
 ## 示例
 
