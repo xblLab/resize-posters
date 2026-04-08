@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`blur-gradient-light/03.html`；可选 `--bg`、`--title-color` 覆盖预设。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`abstract-shape-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -105,7 +105,7 @@ python3 -m http.server 8765
 参数说明：
 
 - `-i, --image`: 输入图片路径（必需）
-- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`、`blur-gradient-light/01.html`），或 **registry 中的数字编号** `1`–`20`（见下表与 `templates/registry.json`）。默认 `default.html`
+- `-t, --template`: 模板。可为 `templates/` 下相对路径（如 `series_phone.html`、`pure-color/03.html`、`blur-gradient-light/01.html`），或 **registry 中的数字编号** `1`–`30`（见下表与 `templates/registry.json`）。默认 `default.html`
 - `-o, --output`: 输出图片路径，默认 `output/<输入图片名>_rendered.jpg`
 - `--title`: 模板中的标题文字
 - `--subtitle`: 模板中的副标题文字
@@ -161,11 +161,35 @@ python3 -m http.server 8765
 | 19 | `blur-gradient-dark/04.html` | `#0A0E18` | 靛青渐变 |
 | 20 | `blur-gradient-dark/05.html` | `#131210` | 琥珀渐变 |
 
+### 模板编号表（浅色 Abstract Shape + 手机框，`abstract-shape-light/01.html`–`05.html`）
+
+背景由 [color4bg](https://github.com/winterx/color4bg.js) 的 `AbstractShapeBg`（`loop: false`），本地脚本为 `assets/vendor/color4bg/AbstractShapeBg.min.js`；默认标题深色字，`--bg` 为深色 hex 时会自动切白字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 21 | `abstract-shape-light/01.html` | `#EEF4FF` | 冰雾抽象形 |
+| 22 | `abstract-shape-light/02.html` | `#FFF6ED` | 蜜杏抽象形 |
+| 23 | `abstract-shape-light/03.html` | `#EEF8F2` | 薄荷抽象形 |
+| 24 | `abstract-shape-light/04.html` | `#FFF0F5` | 蔷薇抽象形 |
+| 25 | `abstract-shape-light/05.html` | `#F3EEFE` | 丁香抽象形 |
+
+### 模板编号表（深色 Abstract Shape + 手机框，`abstract-shape-dark/01.html`–`05.html`）
+
+同上；默认标题白字。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|-------------|------|
+| 26 | `abstract-shape-dark/01.html` | `#0C1424` | 深海抽象形 |
+| 27 | `abstract-shape-dark/02.html` | `#140C18` | 酒红抽象形 |
+| 28 | `abstract-shape-dark/03.html` | `#081210` | 墨绿抽象形 |
+| 29 | `abstract-shape-dark/04.html` | `#0E0818` | 午夜抽象形 |
+| 30 | `abstract-shape-dark/05.html` | `#121008` | 琥珀抽象形 |
+
 权威数据与后续扩展：`templates/registry.json`。
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 

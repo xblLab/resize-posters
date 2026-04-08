@@ -182,7 +182,7 @@ def main() -> None:
         default=DEFAULT_TEMPLATE,
         help=(
             f"模板：相对 templates/ 的文件名（如 series_phone.html、pure-color/01.html），"
-            f"或 registry 中的数字编号 1–20（见 templates/registry.json）（默认: {DEFAULT_TEMPLATE}）"
+            f"或 registry 中的数字编号 1–30（见 templates/registry.json）（默认: {DEFAULT_TEMPLATE}）"
         ),
     )
     parser.add_argument(

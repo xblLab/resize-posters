@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）。",
+  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark。",
   "templates": [
     {
       "id": 1,
@@ -121,6 +121,66 @@
       "path": "blur-gradient-dark/05.html",
       "label": "琥珀渐变",
       "default_bg": "#131210"
+    },
+    {
+      "id": 21,
+      "path": "abstract-shape-light/01.html",
+      "label": "冰雾抽象形",
+      "default_bg": "#EEF4FF"
+    },
+    {
+      "id": 22,
+      "path": "abstract-shape-light/02.html",
+      "label": "蜜杏抽象形",
+      "default_bg": "#FFF6ED"
+    },
+    {
+      "id": 23,
+      "path": "abstract-shape-light/03.html",
+      "label": "薄荷抽象形",
+      "default_bg": "#EEF8F2"
+    },
+    {
+      "id": 24,
+      "path": "abstract-shape-light/04.html",
+      "label": "蔷薇抽象形",
+      "default_bg": "#FFF0F5"
+    },
+    {
+      "id": 25,
+      "path": "abstract-shape-light/05.html",
+      "label": "丁香抽象形",
+      "default_bg": "#F3EEFE"
+    },
+    {
+      "id": 26,
+      "path": "abstract-shape-dark/01.html",
+      "label": "深海抽象形",
+      "default_bg": "#0C1424"
+    },
+    {
+      "id": 27,
+      "path": "abstract-shape-dark/02.html",
+      "label": "酒红抽象形",
+      "default_bg": "#140C18"
+    },
+    {
+      "id": 28,
+      "path": "abstract-shape-dark/03.html",
+      "label": "墨绿抽象形",
+      "default_bg": "#081210"
+    },
+    {
+      "id": 29,
+      "path": "abstract-shape-dark/04.html",
+      "label": "午夜抽象形",
+      "default_bg": "#0E0818"
+    },
+    {
+      "id": 30,
+      "path": "abstract-shape-dark/05.html",
+      "label": "琥珀抽象形",
+      "default_bg": "#121008"
     }
   ]
 }
