@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, initial-scale=1.0">
+    <title>Series — Pure Dark 02</title>
+    <!-- template-id: 7 preset-bg: #6B2D3C (dark series, default white title) -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /*
+             * Mate70-Pro.png：手机 opaque 外接框约 (3000,860)–(7020,9140) → 4021×8281（相对 10000²）。
+             * 透明屏区 (3121–6859)×(1322–9019) 相对该外接框的比例（需与下方 frame 平移/缩放用同一组数）。
+             */
+            --phone-w: 4021;
+            --phone-h: 8281;
+            --phone-l: 3000;
+            --phone-t: 860;
+            --screen-left: 3.009%;
+            --screen-top: 5.579%;
+            --screen-width: 92.99%;
+            --screen-height: 92.96%;
+            --screen-radius: 4.2%;
+            --poster-bg: #6B2D3C;
+            --title-color: #ffffff;
+        }
+
+        html {
+            background: var(--poster-bg);
+        }
+
+        body {
+            width: 1080px;
+            height: 1920px;
+            overflow: hidden;
+            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--poster-bg);
+        }
+
+        .poster {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 48px 40px 56px;
+            box-sizing: border-box;
+        }
+
+        .title {
+            flex: 0 0 auto;
+            max-width: 860px;
+            width: 100%;
+            text-align: center;
+            font-size: 96px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: 0.02em;
+            color: var(--title-color, #ffffff);
+            margin-top: 128px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            overflow-wrap: anywhere;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+        }
+
+        /* 占满标题下方区域，手机块垂直居中，避免「挤在上半屏」 */
+        .phone-wrap {
+            position: relative;
+            top: 72px;
+            flex: 1 1 auto;
+            min-height: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /*
+         * 只显示手机外接框：整图缩放后平移，使 (phone-l,phone-t)–(phone+w,phone+h) 铺满 .phone-crop。
+         */
+        .phone-crop {
+            position: relative;
+            width: 63.8%;
+            max-width: 950px;
+            aspect-ratio: var(--phone-w) / var(--phone-h);
+            overflow: hidden;
+        }
+
+        .phone-crop .frame {
+            position: absolute;
+            z-index: 2;
+            width: calc(100% * 10000 / var(--phone-w));
+            height: auto;
+            left: calc(-1 * var(--phone-l) / var(--phone-w) * 100%);
+            top: calc(-1 * var(--phone-t) / var(--phone-h) * 100%);
+            display: block;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* 截图在下；坐标相对 .phone-crop（即手机实体） */
+        .screen-slot {
+            position: absolute;
+            z-index: 1;
+            left: calc(var(--screen-left));
+            top: calc(var(--screen-top) - 54px);
+            width: calc(var(--screen-width));
+            height: 1296px;
+            overflow: hidden;
+            background: #0a0a0a;
+            border-radius: 60px;
+        }
+
+        .screen-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="poster" id="poster-root">
+        <h1 class="title" id="title-text">应用标题</h1>
+        <div class="phone-wrap">
+            <div class="phone-crop">
+                <div class="screen-slot">
+                    <img
+                        id="target-image"
+                        src="/assets/screenshots/default_screenshot.jpg"
+                        alt=""
+                        crossorigin="anonymous"
+                    />
+                </div>
+                <img
+                    class="frame"
+                    src="/assets/devices/mate70pro/Mate70-Pro.png"
+                    alt=""
+                    width="10000"
+                    height="10000"
+                />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const imageUrl = params.get('image');
+        const title = params.get('title') || '应用标题应用标题应用标题应用标题应用标题应用标题';
+        const bg = params.get('bg') || '#6B2D3C';
+        const titleColorParam = params.get('titleColor') || params.get('title_color');
+
+        document.getElementById('title-text').textContent = title;
+        document.documentElement.style.setProperty('--poster-bg', bg);
+
+        const lightBg = (function () {
+            const m = /^#?([0-9a-f]{6})$/i.exec(bg.trim());
+            if (!m) return false;
+            const n = parseInt(m[1], 16);
+            const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+            const y = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return y > 0.72;
+        })();
+
+        const root = document.getElementById('poster-root');
+        if (titleColorParam) {
+            root.style.setProperty('--title-color', decodeURIComponent(titleColorParam));
+        } else if (lightBg) {
+            root.style.setProperty('--title-color', '#1a1a1e');
+        } else {
+            root.style.setProperty('--title-color', '#ffffff');
+        }
+
+        const imgEl = document.getElementById('target-image');
+        if (imageUrl) {
+            imgEl.src = imageUrl;
+        }
+
+        imgEl.onload = function () {
+            window.__IMAGE_LOADED__ = true;
+            if (window.__onImageLoaded) window.__onImageLoaded();
+        };
+        imgEl.onerror = function () {
+            window.__IMAGE_ERROR__ = true;
+            if (window.__onImageError) window.__onImageError();
+        };
+    </script>
+</body>
+</html>

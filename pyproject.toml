@@ -1,0 +1,12 @@
+[project]
+name = "resize-posts-1080x1920-skill"
+version = "0.1.0"
+description = "Claude skill: 1080×1920 出图与 HTML 模板渲染"
+requires-python = ">=3.10"
+dependencies = [
+  "pillow>=10.0.0",
+  "playwright>=1.40.0",
+]
+
+[tool.uv]
+package = false

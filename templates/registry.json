@@ -1,0 +1,366 @@
+{
+  "version": 1,
+  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark；31–35 浅色 grid-array-light（color4bg Grid Array）；36–40 深色 grid-array-dark；41–45 浅色 triangles-mosaic-light（color4bg TrianglesMosaic）；46–50 深色 triangles-mosaic-dark；51–55 浅色 linear-gradient-light；56–60 深色 linear-gradient-dark。",
+  "templates": [
+    {
+      "id": 1,
+      "path": "pure-color/01.html",
+      "label": "冰蓝",
+      "default_bg": "#E3F2FD"
+    },
+    {
+      "id": 2,
+      "path": "pure-color/02.html",
+      "label": "蜜杏",
+      "default_bg": "#FFF8E6"
+    },
+    {
+      "id": 3,
+      "path": "pure-color/03.html",
+      "label": "薄荷绿",
+      "default_bg": "#E8F5E9"
+    },
+    {
+      "id": 4,
+      "path": "pure-color/04.html",
+      "label": "蔷薇粉",
+      "default_bg": "#FCE4EC"
+    },
+    {
+      "id": 5,
+      "path": "pure-color/05.html",
+      "label": "丁香紫",
+      "default_bg": "#EDE7F6"
+    },
+    {
+      "id": 6,
+      "path": "pure-color-dark/01.html",
+      "label": "钢蓝",
+      "default_bg": "#1B4A6B"
+    },
+    {
+      "id": 7,
+      "path": "pure-color-dark/02.html",
+      "label": "酒红",
+      "default_bg": "#6B2D3C"
+    },
+    {
+      "id": 8,
+      "path": "pure-color-dark/03.html",
+      "label": "松绿",
+      "default_bg": "#1F4D3A"
+    },
+    {
+      "id": 9,
+      "path": "pure-color-dark/04.html",
+      "label": "茄紫",
+      "default_bg": "#4A2D6B"
+    },
+    {
+      "id": 10,
+      "path": "pure-color-dark/05.html",
+      "label": "古铜",
+      "default_bg": "#6B4A2A"
+    },
+    {
+      "id": 11,
+      "path": "blur-gradient-light/01.html",
+      "label": "雾紫蓝渐变",
+      "default_bg": "#EEF0F8"
+    },
+    {
+      "id": 12,
+      "path": "blur-gradient-light/02.html",
+      "label": "薄荷杏渐变",
+      "default_bg": "#F0F7F3"
+    },
+    {
+      "id": 13,
+      "path": "blur-gradient-light/03.html",
+      "label": "晴空渐变",
+      "default_bg": "#F2F8FF"
+    },
+    {
+      "id": 14,
+      "path": "blur-gradient-light/04.html",
+      "label": "蔷薇渐变",
+      "default_bg": "#FBF5F8"
+    },
+    {
+      "id": 15,
+      "path": "blur-gradient-light/05.html",
+      "label": "青柠渐变",
+      "default_bg": "#F5FBFC"
+    },
+    {
+      "id": 16,
+      "path": "blur-gradient-dark/01.html",
+      "label": "夜蓝紫渐变",
+      "default_bg": "#12141E"
+    },
+    {
+      "id": 17,
+      "path": "blur-gradient-dark/02.html",
+      "label": "森绿渐变",
+      "default_bg": "#0D1612"
+    },
+    {
+      "id": 18,
+      "path": "blur-gradient-dark/03.html",
+      "label": "酒红渐变",
+      "default_bg": "#141016"
+    },
+    {
+      "id": 19,
+      "path": "blur-gradient-dark/04.html",
+      "label": "靛青渐变",
+      "default_bg": "#0A0E18"
+    },
+    {
+      "id": 20,
+      "path": "blur-gradient-dark/05.html",
+      "label": "琥珀渐变",
+      "default_bg": "#131210"
+    },
+    {
+      "id": 21,
+      "path": "abstract-shape-light/01.html",
+      "label": "冰雾抽象形",
+      "default_bg": "#EEF4FF"
+    },
+    {
+      "id": 22,
+      "path": "abstract-shape-light/02.html",
+      "label": "蜜杏抽象形",
+      "default_bg": "#FFF6ED"
+    },
+    {
+      "id": 23,
+      "path": "abstract-shape-light/03.html",
+      "label": "薄荷抽象形",
+      "default_bg": "#EEF8F2"
+    },
+    {
+      "id": 24,
+      "path": "abstract-shape-light/04.html",
+      "label": "蔷薇抽象形",
+      "default_bg": "#FFF0F5"
+    },
+    {
+      "id": 25,
+      "path": "abstract-shape-light/05.html",
+      "label": "丁香抽象形",
+      "default_bg": "#F3EEFE"
+    },
+    {
+      "id": 26,
+      "path": "abstract-shape-dark/01.html",
+      "label": "深海抽象形",
+      "default_bg": "#0C1424"
+    },
+    {
+      "id": 27,
+      "path": "abstract-shape-dark/02.html",
+      "label": "酒红抽象形",
+      "default_bg": "#140C18"
+    },
+    {
+      "id": 28,
+      "path": "abstract-shape-dark/03.html",
+      "label": "墨绿抽象形",
+      "default_bg": "#081210"
+    },
+    {
+      "id": 29,
+      "path": "abstract-shape-dark/04.html",
+      "label": "午夜抽象形",
+      "default_bg": "#0E0818"
+    },
+    {
+      "id": 30,
+      "path": "abstract-shape-dark/05.html",
+      "label": "琥珀抽象形",
+      "default_bg": "#121008"
+    },
+    {
+      "id": 31,
+      "path": "grid-array-light/01.html",
+      "label": "冰雾网格",
+      "default_bg": "#EEF4FF"
+    },
+    {
+      "id": 32,
+      "path": "grid-array-light/02.html",
+      "label": "蜜杏网格",
+      "default_bg": "#FFF6ED"
+    },
+    {
+      "id": 33,
+      "path": "grid-array-light/03.html",
+      "label": "薄荷网格",
+      "default_bg": "#EEF8F2"
+    },
+    {
+      "id": 34,
+      "path": "grid-array-light/04.html",
+      "label": "蔷薇网格",
+      "default_bg": "#FFF0F5"
+    },
+    {
+      "id": 35,
+      "path": "grid-array-light/05.html",
+      "label": "丁香网格",
+      "default_bg": "#F3EEFE"
+    },
+    {
+      "id": 36,
+      "path": "grid-array-dark/01.html",
+      "label": "深海网格",
+      "default_bg": "#0C1424"
+    },
+    {
+      "id": 37,
+      "path": "grid-array-dark/02.html",
+      "label": "酒红网格",
+      "default_bg": "#140C18"
+    },
+    {
+      "id": 38,
+      "path": "grid-array-dark/03.html",
+      "label": "墨绿网格",
+      "default_bg": "#081210"
+    },
+    {
+      "id": 39,
+      "path": "grid-array-dark/04.html",
+      "label": "午夜网格",
+      "default_bg": "#0E0818"
+    },
+    {
+      "id": 40,
+      "path": "grid-array-dark/05.html",
+      "label": "琥珀网格",
+      "default_bg": "#121008"
+    },
+    {
+      "id": 41,
+      "path": "triangles-mosaic-light/01.html",
+      "label": "冰雾三角拼",
+      "default_bg": "#EEF4FF"
+    },
+    {
+      "id": 42,
+      "path": "triangles-mosaic-light/02.html",
+      "label": "蜜杏三角拼",
+      "default_bg": "#FFF6ED"
+    },
+    {
+      "id": 43,
+      "path": "triangles-mosaic-light/03.html",
+      "label": "薄荷三角拼",
+      "default_bg": "#EEF8F2"
+    },
+    {
+      "id": 44,
+      "path": "triangles-mosaic-light/04.html",
+      "label": "蔷薇三角拼",
+      "default_bg": "#FFF0F5"
+    },
+    {
+      "id": 45,
+      "path": "triangles-mosaic-light/05.html",
+      "label": "丁香三角拼",
+      "default_bg": "#F3EEFE"
+    },
+    {
+      "id": 46,
+      "path": "triangles-mosaic-dark/01.html",
+      "label": "深海三角拼",
+      "default_bg": "#0C1424"
+    },
+    {
+      "id": 47,
+      "path": "triangles-mosaic-dark/02.html",
+      "label": "酒红三角拼",
+      "default_bg": "#140C18"
+    },
+    {
+      "id": 48,
+      "path": "triangles-mosaic-dark/03.html",
+      "label": "墨绿三角拼",
+      "default_bg": "#081210"
+    },
+    {
+      "id": 49,
+      "path": "triangles-mosaic-dark/04.html",
+      "label": "午夜三角拼",
+      "default_bg": "#0E0818"
+    },
+    {
+      "id": 50,
+      "path": "triangles-mosaic-dark/05.html",
+      "label": "琥珀三角拼",
+      "default_bg": "#121008"
+    },
+    {
+      "id": 51,
+      "path": "linear-gradient-light/01.html",
+      "label": "晨曦线性渐变",
+      "default_bg": "#FFDAB9"
+    },
+    {
+      "id": 52,
+      "path": "linear-gradient-light/02.html",
+      "label": "冰川线性渐变",
+      "default_bg": "#B8D4E8"
+    },
+    {
+      "id": 53,
+      "path": "linear-gradient-light/03.html",
+      "label": "丁香线性渐变",
+      "default_bg": "#E8D5F2"
+    },
+    {
+      "id": 54,
+      "path": "linear-gradient-light/04.html",
+      "label": "春芽线性渐变",
+      "default_bg": "#C8E6C9"
+    },
+    {
+      "id": 55,
+      "path": "linear-gradient-light/05.html",
+      "label": "珊瑚线性渐变",
+      "default_bg": "#FFCDD2"
+    },
+    {
+      "id": 56,
+      "path": "linear-gradient-dark/01.html",
+      "label": "午夜线性渐变",
+      "default_bg": "#161B22"
+    },
+    {
+      "id": 57,
+      "path": "linear-gradient-dark/02.html",
+      "label": "深海线性渐变",
+      "default_bg": "#1A2F4A"
+    },
+    {
+      "id": 58,
+      "path": "linear-gradient-dark/03.html",
+      "label": "酒韵线性渐变",
+      "default_bg": "#3D1428"
+    },
+    {
+      "id": 59,
+      "path": "linear-gradient-dark/04.html",
+      "label": "松涛线性渐变",
+      "default_bg": "#0D3D3A"
+    },
+    {
+      "id": 60,
+      "path": "linear-gradient-dark/05.html",
+      "label": "夜紫线性渐变",
+      "default_bg": "#2D1B4E"
+    }
+  ]
+}

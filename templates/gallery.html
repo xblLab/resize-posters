@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模板画廊 · registry</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px 28px 48px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f4f4f5;
+            color: #1a1a1e;
+        }
+        h1 { font-size: 1.35rem; margin: 0 0 8px; }
+        .hint {
+            font-size: 0.875rem;
+            color: #555;
+            margin-bottom: 20px;
+            max-width: 720px;
+            line-height: 1.5;
+        }
+        .hint code { background: #e8e8ea; padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+        .err {
+            background: #fde8e8;
+            color: #8b1a1a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .err.show { display: block; }
+        .template-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+            overflow: hidden;
+            flex: 0 0 auto;
+            width: 298px;
+            padding: 14px 14px 16px;
+            text-align: center;
+        }
+        .card-id {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        .card-preview {
+            width: 270px;
+            height: 480px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+            background: #1a1a20;
+            border-radius: 8px;
+        }
+        .card-preview iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1080px;
+            height: 1920px;
+            border: 0;
+            transform: scale(0.25);
+            transform-origin: top left;
+            pointer-events: none;
+        }
+        .card-preview-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            font-size: 0.8rem;
+            color: #888;
+            line-height: 1.4;
+            text-align: center;
+        }
+        .card-preview.is-loaded .card-preview-placeholder {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>上架图模板画廊</h1>
+    <p class="hint">
+        数据来自同目录 <code>registry.json</code>。请在本 skill 根目录启动本地 HTTP（如 <code>python3 -m http.server 8765</code> 或 <code>scripts/preview_gallery.py</code>），再打开本页。
+        勿用 <code>file://</code> 直接打开，否则无法加载 JSON。预览仅在卡片进入视口附近时加载，滚出视口后卸载以节省性能。
+    </p>
+    <div class="err" id="err"></div>
+    <div class="template-list" id="template-list"></div>
+
+    <script>
+        (function () {
+            const PREVIEW_TITLE = '预览标题';
+            const DEFAULT_IMAGE = '/assets/screenshots/default_screenshot.jpg';
+
+            function tmplUrl(item) {
+                const path = item.path || '';
+                const q = new URLSearchParams({
+                    title: PREVIEW_TITLE,
+                    image: DEFAULT_IMAGE
+                });
+                if (item.url_params && typeof item.url_params === 'object') {
+                    Object.keys(item.url_params).forEach(function (k) {
+                        q.set(k, String(item.url_params[k]));
+                    });
+                }
+                return '/templates/' + path.replace(/^\//, '') + '?' + q.toString();
+            }
+
+            function escAttr(s) {
+                return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            }
+
+            function card(item) {
+                const url = tmplUrl(item);
+                const u = escAttr(url);
+                return (
+                    '<article class="card">' +
+                    '<div class="card-id">编号 ' + item.id + '</div>' +
+                    '<div class="card-preview" data-preview-url="' + u + '" data-template-id="' + String(item.id) + '">' +
+                    '<div class="card-preview-placeholder">划入此区域后加载预览</div>' +
+                    '</div>' +
+                    '</article>'
+                );
+            }
+
+            function mountIframe(container) {
+                if (container.querySelector('iframe')) return;
+                var raw = container.getAttribute('data-preview-url');
+                if (!raw) return;
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('src', raw.replace(/&amp;/g, '&'));
+                iframe.setAttribute('title', '模板 ' + (container.getAttribute('data-template-id') || ''));
+                container.appendChild(iframe);
+                container.classList.add('is-loaded');
+            }
+
+            function unmountIframe(container) {
+                var iframe = container.querySelector('iframe');
+                if (iframe) iframe.remove();
+                container.classList.remove('is-loaded');
+            }
+
+            function setupLazyPreviews(root) {
+                var previews = root.querySelectorAll('.card-preview[data-preview-url]');
+                if (!previews.length || !('IntersectionObserver' in window)) {
+                    previews.forEach(function (el) { mountIframe(el); });
+                    return;
+                }
+                var io = new IntersectionObserver(
+                    function (entries) {
+                        entries.forEach(function (entry) {
+                            var el = entry.target;
+                            if (entry.isIntersecting) {
+                                mountIframe(el);
+                            } else {
+                                unmountIframe(el);
+                            }
+                        });
+                    },
+                    { root: null, rootMargin: '120px 0px 240px 0px', threshold: 0 }
+                );
+                previews.forEach(function (el) { io.observe(el); });
+            }
+
+            fetch('./registry.json', { cache: 'no-store' })
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function (data) {
+                    var list = (data.templates || []).slice().sort(function (a, b) {
+                        return (a.id || 0) - (b.id || 0);
+                    });
+                    var html = '';
+                    for (var i = 0; i < list.length; i++) html += card(list[i]);
+                    var mount = document.getElementById('template-list');
+                    mount.innerHTML = html || '<p>registry 中无模板条目。</p>';
+                    setupLazyPreviews(mount);
+                })
+                .catch(function (e) {
+                    document.getElementById('err').textContent =
+                        '无法加载 registry.json：' + (e && e.message ? e.message : String(e));
+                    document.getElementById('err').classList.add('show');
+                });
+        })();
+    </script>
+</body>
+</html>
