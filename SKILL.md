@@ -3,6 +3,7 @@ name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
   HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`，`61`–`62` 双屏连贯 `store_pair_left` / `store_pair_right`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设；双屏一键出图可用 `--pair`。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
+  模板组（`templates/template_groups.json`，每组 1–5 个 registry 编号）：`scripts/render_template_group.py -g <组id>` 按组内顺序依次出图；`-i` 可为单图或**一层目录**（批量），输出 `<stem>_g<组id>_t<模板号>.jpg`；`--list-groups` 列出全部组。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -82,6 +83,15 @@ python3 scripts/render_with_template.py \
 ```
 
 使用 uv 时：先在本 skill 根目录执行 `uv run python scripts/ensure_render_deps.py`，再将下文命令中的 `python3` 换为 `uv run python`。
+
+### 模板组批量出图（`scripts/render_template_group.py`）
+
+`templates/template_groups.json` 定义多组（每组含 1–5 个 registry 编号）。`scripts/render_template_group.py -i <图或目录> -g <组id>` 在单次本地 HTTP 服务下渲染：对目录则**仅一层**批量处理（与缩放脚本相同后缀）；每张图按组内模板顺序各出一张，输出 `<stem>_g<组id>_t<模板号>.jpg`（默认目录 `output/`）；`-o` 传目录则写入该目录，传单文件路径仅在与**单张** `-i` 联用时作为输出文件名基准；`--list-groups` 列出全部组（无需 Playwright）。
+
+```bash
+python3 scripts/render_template_group.py -i photo.jpg -g 1 --title "标题"
+python3 scripts/render_template_group.py -i assets/screenshots/demo-app -g 1 --title "标题" -o output/demo-app/
+```
 
 ### 预览所有模板（浏览器）
 

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "上架图模板组：每组包含 1–5 个 registry 模板编号（见 templates/registry.json）。scripts/render_template_group.py 使用 -g 指定组 id。",
+  "groups": [
+    {
+      "id": 1,
+      "name": "琥珀渐变单卡",
+      "template_ids": [20]
+    }
+  ]
+}
