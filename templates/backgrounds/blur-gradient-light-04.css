@@ -1,0 +1,50 @@
+/**
+ * blur-gradient-light/04.html（registry 14）背景层：三色 blob + 模糊。
+ * 与 store_pair_* 的 bgPreset=blur-light-04 共用，避免样式漂移。
+ */
+:root {
+    --poster-bg: #FBF5F8;
+    --blob-1: #f8a8c8;
+    --blob-2: #f5d4e8;
+    --blob-3: #e1bee7;
+}
+
+.bg-blur {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-blur .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(98px);
+    -webkit-filter: blur(98px);
+    opacity: 0.85;
+}
+
+.bg-blur .blob-1 {
+    width: 82%;
+    height: 58%;
+    left: -20%;
+    bottom: -8%;
+    background: var(--blob-1);
+}
+
+.bg-blur .blob-2 {
+    width: 68%;
+    height: 64%;
+    right: -25%;
+    top: -10%;
+    background: var(--blob-2);
+}
+
+.bg-blur .blob-3 {
+    width: 72%;
+    height: 52%;
+    left: 25%;
+    top: 12%;
+    background: var(--blob-3);
+}

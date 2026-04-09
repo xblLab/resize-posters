@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
     <title>Store pair — right</title>
+    <link rel="stylesheet" href="/templates/backgrounds/blur-gradient-light-04.css">
     <style>
         * {
             margin: 0;
@@ -22,6 +23,10 @@
             background: var(--poster-bg-base);
         }
 
+        html.bg-blur-light-04 {
+            background: var(--poster-bg);
+        }
+
         body {
             width: 1080px;
             height: 1920px;
@@ -29,6 +34,22 @@
             position: relative;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: var(--poster-bg-base);
+        }
+
+        html.bg-blur-light-04 body {
+            background: var(--poster-bg);
+        }
+
+        #stage-bg-blur-layer {
+            display: none;
+        }
+
+        html.bg-blur-light-04 #stage-bg-star {
+            display: none;
+        }
+
+        html.bg-blur-light-04 #stage-bg-blur-layer {
+            display: block;
         }
 
         .stage {
@@ -63,15 +84,13 @@
             position: absolute;
             z-index: 3;
             left: 1080px;
-            top: 0;
+            top: 128px;
             width: 1080px;
-            padding: 52px 48px 32px;
             pointer-events: none;
         }
 
         .title {
-            font-family: ui-serif, Georgia, 'Times New Roman', 'Noto Serif SC', serif;
-            font-size: 68px;
+            font-size: 96px;
             font-weight: 700;
             line-height: 1.15;
             letter-spacing: 0.01em;
@@ -152,7 +171,12 @@
 </head>
 <body>
     <div class="stage" id="stage-root">
-        <div class="stage-bg" aria-hidden="true"></div>
+        <div class="stage-bg" id="stage-bg-star" aria-hidden="true"></div>
+        <div class="bg-blur" id="stage-bg-blur-layer" aria-hidden="true">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
         <div class="copy-block">
             <h1 class="title" id="title-text">应用标题</h1>
         </div>
@@ -185,13 +209,21 @@
         const imageUrl = params.get('image');
         const title = params.get('title') || '用舒缓声音放松';
         const bg = params.get('bg');
+        const bgPreset = params.get('bgPreset');
         const titleColorParam = params.get('titleColor') || params.get('title_color');
+
+        if (bgPreset === 'blur-light-04') {
+            document.documentElement.classList.add('bg-blur-light-04');
+            if (bg) {
+                document.documentElement.style.setProperty('--poster-bg', bg);
+            }
+        }
 
         applyStorePairPhoneLayout(document.documentElement, storePairPhoneOverridesFromParams(params));
 
         document.getElementById('title-text').textContent = title;
 
-        if (bg) {
+        if (bg && bgPreset !== 'blur-light-04') {
             document.documentElement.style.setProperty('--poster-bg-base', bg);
         }
 
@@ -199,7 +231,12 @@
             document.documentElement.style.setProperty('--title-color', decodeURIComponent(titleColorParam));
         }
 
-        const base = bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg-base').trim() || '#0a1228';
+        const base = (function () {
+            if (bgPreset === 'blur-light-04') {
+                return bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg').trim() || '#FBF5F8';
+            }
+            return bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg-base').trim() || '#0a1228';
+        })();
         const lightBg = (function () {
             const m = /^#?([0-9a-f]{6})$/i.exec(String(base).trim());
             if (!m) return false;

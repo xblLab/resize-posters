@@ -1,6 +1,9 @@
 """
 按模板组（templates/template_groups.json）批量渲染上架图：单次 HTTP，依次使用组内各 registry 编号。
 
+- cartesian：每张输入图 × 组内每个 template_id（与旧版一致）。
+- sequential：按 slots 顺序渲染，每槽指定 template_id、input_index（输入图下标）及可选 query 合并到 URL。
+
 依赖与 render_with_template.py 相同（Playwright）；运行前建议先执行 ensure_render_deps.py。
 """
 
@@ -18,6 +21,9 @@ HTTP_ROOT = SKILL_ROOT
 
 # 与 resize_posts_1080x1920.py 一致：目录输入只处理一层内的这些后缀
 IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".webp", ".bmp"})
+
+MAX_CARTESIAN_TEMPLATES = 5
+MAX_SEQUENTIAL_SLOTS = 20
 
 
 def load_registry_template_ids() -> set[int]:
@@ -40,8 +46,14 @@ def list_groups() -> None:
     for g in data.get("groups", []):
         gid = g.get("id")
         name = g.get("name", "")
-        tids = g.get("template_ids", [])
-        print(f"id={gid}\tname={name}\ttemplate_ids={tids}")
+        mode = g.get("mode") or "cartesian"
+        if mode == "sequential":
+            slots = g.get("slots") or []
+            tids = [s.get("template_id") for s in slots if isinstance(s, dict)]
+            print(f"id={gid}\tname={name}\tmode={mode}\tslot_template_ids={tids}")
+        else:
+            tids = g.get("template_ids", [])
+            print(f"id={gid}\tname={name}\tmode={mode}\ttemplate_ids={tids}")
 
 
 def find_group(data: dict, group_id: int) -> dict:
@@ -52,13 +64,13 @@ def find_group(data: dict, group_id: int) -> dict:
     sys.exit(1)
 
 
-def validate_group(group: dict, registry_ids: set[int]) -> list[int]:
+def validate_group_cartesian(group: dict, registry_ids: set[int]) -> list[int]:
     tids = group.get("template_ids")
     if not isinstance(tids, list) or len(tids) < 1:
-        print("template_ids 必须为非空数组", file=sys.stderr)
+        print("cartesian 模式下 template_ids 必须为非空数组", file=sys.stderr)
         sys.exit(1)
-    if len(tids) > 5:
-        print("template_ids 最多 5 个", file=sys.stderr)
+    if len(tids) > MAX_CARTESIAN_TEMPLATES:
+        print(f"template_ids 最多 {MAX_CARTESIAN_TEMPLATES} 个", file=sys.stderr)
         sys.exit(1)
     out: list[int] = []
     for x in tids:
@@ -69,6 +81,41 @@ def validate_group(group: dict, registry_ids: set[int]) -> list[int]:
             print(f"未知模板编号: {x}（请检查 templates/registry.json）", file=sys.stderr)
             sys.exit(1)
         out.append(x)
+    return out
+
+
+def validate_sequential_slots(group: dict, registry_ids: set[int]) -> list[dict]:
+    slots = group.get("slots")
+    if not isinstance(slots, list) or len(slots) < 1:
+        print("sequential 模式下 slots 必须为非空数组", file=sys.stderr)
+        sys.exit(1)
+    if len(slots) > MAX_SEQUENTIAL_SLOTS:
+        print(f"slots 最多 {MAX_SEQUENTIAL_SLOTS} 个", file=sys.stderr)
+        sys.exit(1)
+    out: list[dict] = []
+    for i, s in enumerate(slots):
+        if not isinstance(s, dict):
+            print(f"slots[{i}] 必须为对象", file=sys.stderr)
+            sys.exit(1)
+        tid = s.get("template_id")
+        if not isinstance(tid, int):
+            print(f"slots[{i}].template_id 必须为整数", file=sys.stderr)
+            sys.exit(1)
+        if tid not in registry_ids:
+            print(f"未知模板编号: {tid}（请检查 templates/registry.json）", file=sys.stderr)
+            sys.exit(1)
+        idx = s.get("input_index", 0)
+        if not isinstance(idx, int) or idx < 0:
+            print(f"slots[{i}].input_index 必须为非负整数", file=sys.stderr)
+            sys.exit(1)
+        q = s.get("query")
+        extra_query: dict[str, str] = {}
+        if q is not None:
+            if not isinstance(q, dict):
+                print(f"slots[{i}].query 必须为对象", file=sys.stderr)
+                sys.exit(1)
+            extra_query = {str(k): str(v) for k, v in q.items()}
+        out.append({"template_id": tid, "input_index": idx, "query": extra_query})
     return out
 
 
@@ -135,6 +182,34 @@ def output_path_for_slot(
     return parent / f"{stem}_g{group_id}_t{template_id}{suffix}"
 
 
+def output_path_for_sequential_slot(
+    image_stem: str,
+    output_arg: Path | None,
+    group_id: int,
+    template_id: int,
+    slot_index: int,
+    *,
+    num_inputs: int,
+) -> Path:
+    suffix = ".jpg"
+    if output_arg is None:
+        parent = Path("output").resolve()
+    elif is_output_dir_arg(output_arg):
+        parent = output_arg.resolve()
+    else:
+        if num_inputs > 1:
+            print(
+                "-o 为具体图片路径时仅支持单张输入；多张请传输出目录（如 -o output/demo/）或省略 -o",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        parent = output_arg.parent
+        if output_arg.suffix:
+            suffix = output_arg.suffix
+    parent.mkdir(parents=True, exist_ok=True)
+    return parent / f"{image_stem}_g{group_id}_s{slot_index:02d}_t{template_id}{suffix}"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="按模板组批量渲染 1080×1920 上架图（templates/template_groups.json）"
@@ -196,23 +271,41 @@ def main() -> None:
     registry_ids = load_registry_template_ids()
     data = load_template_groups()
     group = find_group(data, args.group_id)
-    template_ids = validate_group(group, registry_ids)
+    mode = group.get("mode") or "cartesian"
 
     port, server = start_server(HTTP_ROOT, args.port)
     print(f"服务器运行在 http://127.0.0.1:{port}")
-    print(f"输入 {n} 张图，模板组内 {len(template_ids)} 个模板，共 {n * len(template_ids)} 个输出文件")
     try:
-        for image_path in image_paths:
-            for tid in template_ids:
+        if mode == "sequential":
+            slots = validate_sequential_slots(group, registry_ids)
+            max_idx = max(s["input_index"] for s in slots)
+            if n <= max_idx:
+                print(
+                    f"sequential 模式需要至少 {max_idx + 1} 张输入图（input_index 最大为 {max_idx}），当前 {n} 张",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            print(
+                f"sequential：输入 {n} 张图，{len(slots)} 个槽位，共 {len(slots)} 个输出文件"
+            )
+            for slot_index, slot in enumerate(slots):
+                tid = slot["template_id"]
+                img_idx = slot["input_index"]
+                image_path = image_paths[img_idx]
                 template_name, registry_extra = resolve_template(str(tid))
-                out_path = output_path_for_slot(
-                    image_path,
+                merged: dict[str, str] = dict(registry_extra)
+                merged.update(slot["query"])
+                out_path = output_path_for_sequential_slot(
+                    image_path.stem,
                     args.output,
                     args.group_id,
                     tid,
+                    slot_index,
                     num_inputs=n,
                 )
-                print(f"正在渲染: {image_path.name}（模板 {tid}）→ {out_path.name}")
+                print(
+                    f"正在渲染: 槽 {slot_index} ← {image_path.name}（模板 {tid}）→ {out_path.name}"
+                )
                 render_with_playwright(
                     image_path=image_path,
                     template_name=template_name,
@@ -222,9 +315,37 @@ def main() -> None:
                     subtitle=args.subtitle,
                     bg=args.bg,
                     title_color=args.title_color,
-                    extra_query=registry_extra,
+                    extra_query=merged,
                 )
                 print(f"完成: {out_path}")
+        else:
+            template_ids = validate_group_cartesian(group, registry_ids)
+            print(
+                f"cartesian：输入 {n} 张图，模板组内 {len(template_ids)} 个模板，共 {n * len(template_ids)} 个输出文件"
+            )
+            for image_path in image_paths:
+                for tid in template_ids:
+                    template_name, registry_extra = resolve_template(str(tid))
+                    out_path = output_path_for_slot(
+                        image_path,
+                        args.output,
+                        args.group_id,
+                        tid,
+                        num_inputs=n,
+                    )
+                    print(f"正在渲染: {image_path.name}（模板 {tid}）→ {out_path.name}")
+                    render_with_playwright(
+                        image_path=image_path,
+                        template_name=template_name,
+                        output_path=out_path,
+                        server_port=port,
+                        title=args.title,
+                        subtitle=args.subtitle,
+                        bg=args.bg,
+                        title_color=args.title_color,
+                        extra_query=registry_extra,
+                    )
+                    print(f"完成: {out_path}")
     finally:
         server.shutdown()
         print("服务器已关闭")

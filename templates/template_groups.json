@@ -1,11 +1,24 @@
 {
   "version": 1,
-  "description": "上架图模板组：每组包含 1–5 个 registry 模板编号（见 templates/registry.json）。scripts/render_template_group.py 使用 -g 指定组 id。",
+  "description": "上架图模板组：cartesian 模式为 template_ids（每张输入图 × 每个模板）；sequential 模式为 slots（按槽顺序、每槽指定 template_id 与 input_index）。见 templates/registry.json。",
   "groups": [
     {
       "id": 1,
       "name": "琥珀渐变单卡",
+      "mode": "cartesian",
       "template_ids": [20]
+    },
+    {
+      "id": 2,
+      "name": "蔷薇渐变+双屏连贯",
+      "mode": "sequential",
+      "slots": [
+        { "template_id": 61, "input_index": 0, "query": { "bgPreset": "blur-light-04" } },
+        { "template_id": 62, "input_index": 0, "query": { "bgPreset": "blur-light-04" } },
+        { "template_id": 14, "input_index": 1 },
+        { "template_id": 14, "input_index": 2 },
+        { "template_id": 14, "input_index": 3 }
+      ]
     }
   ]
 }

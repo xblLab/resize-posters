@@ -3,7 +3,7 @@ name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
   HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`，`61`–`62` 双屏连贯 `store_pair_left` / `store_pair_right`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设；双屏一键出图可用 `--pair`。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
-  模板组（`templates/template_groups.json`，每组 1–5 个 registry 编号）：`scripts/render_template_group.py -g <组id>` 按组内顺序依次出图；`-i` 可为单图或**一层目录**（批量），输出 `<stem>_g<组id>_t<模板号>.jpg`；`--list-groups` 列出全部组。
+  模板组（`templates/template_groups.json`）：**cartesian**（默认）每组 `template_ids`（1–5 个编号），每张输入图 × 每个模板；**sequential** 用 `slots` 按槽顺序出图，每槽含 `template_id`、`input_index`（输入图排序后的下标）、可选 `query`（合并进 URL，如双屏槽传 `bgPreset=blur-light-04` 与 registry 14 蔷薇渐变底一致）。`scripts/render_template_group.py -g <组id>`；cartesian 输出 `<stem>_g<组id>_t<模板号>.jpg`，sequential 输出 `<stem>_g<组id>_s<槽序号>_t<模板号>.jpg`；`--list-groups` 列出全部组。store_pair 模板支持 URL 参数 `bgPreset=blur-light-04`（与 `blur-gradient-light/04.html` 同背景层）。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -86,11 +86,14 @@ python3 scripts/render_with_template.py \
 
 ### 模板组批量出图（`scripts/render_template_group.py`）
 
-`templates/template_groups.json` 定义多组（每组含 1–5 个 registry 编号）。`scripts/render_template_group.py -i <图或目录> -g <组id>` 在单次本地 HTTP 服务下渲染：对目录则**仅一层**批量处理（与缩放脚本相同后缀）；每张图按组内模板顺序各出一张，输出 `<stem>_g<组id>_t<模板号>.jpg`（默认目录 `output/`）；`-o` 传目录则写入该目录，传单文件路径仅在与**单张** `-i` 联用时作为输出文件名基准；`--list-groups` 列出全部组（无需 Playwright）。
+`templates/template_groups.json` 定义多组。**cartesian**（默认，`mode` 可省略）：每组 `template_ids` 为 1–5 个 registry 编号；对目录则**仅一层**批量处理，**每张输入图**按组内模板顺序各出一张（笛卡尔积），输出 `<stem>_g<组id>_t<模板号>.jpg`。**sequential**（`"mode": "sequential"`）：用 `slots` 数组按顺序渲染，每槽 `template_id`、`input_index`（排序后输入图列表的下标，从 0 起）、可选 `query`（键值并入模板 URL，与 registry 的 `url_params` 合并，槽级覆盖同名键）。sequential 输出 `<stem>_g<组id>_s<槽序号两位>_t<模板号>.jpg`，其中 `<stem>` 为该槽所用输入图的文件名（不含扩展名）。sequential 所需输入图张数 ≥ `max(input_index)+1`。默认输出目录 `output/`；`-o` 传目录则写入该目录，传单文件路径仅在与**单张** `-i` 联用时作为输出文件名基准；`--list-groups` 列出全部组（无需 Playwright）。
+
+组 id **2**（「蔷薇渐变+双屏连贯」）为 sequential：槽 0–1 为双屏左/右（同一 `input_index: 0`，背景 `bgPreset=blur-light-04`），槽 2–4 为模板 14，分别对应输入图下标 1、2、3。需至少 **4** 张图（例如 `1.jpg` 作双屏、`2.jpg`–`4.jpg` 作三张单卡）。
 
 ```bash
 python3 scripts/render_template_group.py -i photo.jpg -g 1 --title "标题"
 python3 scripts/render_template_group.py -i assets/screenshots/demo-app -g 1 --title "标题" -o output/demo-app/
+python3 scripts/render_template_group.py -i path/to/four_or_more_images/ -g 2 --title "标题" -o output/campaign/
 ```
 
 ### 预览所有模板（浏览器）
@@ -112,7 +115,7 @@ python3 -m http.server 8765
 
 浏览器打开：`http://127.0.0.1:<端口>/templates/gallery.html`（`preview_gallery.py` 默认端口 8765 时即 `http://127.0.0.1:8765/templates/gallery.html`）。
 
-**模板组列表预览**：`templates/template_groups_showcase.html` 展示已登记的模板组（仅组 ID）；每组 5 个 iframe 按 `template_groups.json` 内 `template_ids` 与 `registry.json` 加载真实 HTML 模板，截图与标题分别来自 `assets/screenshots/demo-app` 与 `preview_title.json`。须通过 HTTP 打开，例如 `http://127.0.0.1:8765/templates/template_groups_showcase.html`（勿用 `file://`）。
+**模板组列表预览**：`templates/template_groups_showcase.html` 展示已登记的模板组（仅组 ID）；每组 5 个 iframe 按 `template_groups.json` 内 `template_ids`（cartesian）或 `slots`（sequential，含 `query`）与 `registry.json` 加载真实 HTML 模板，截图与标题分别来自 `assets/screenshots/demo-app` 与 `preview_title.json`。须通过 HTTP 打开，例如 `http://127.0.0.1:8765/templates/template_groups_showcase.html`（勿用 `file://`）。
 
 **双屏模板并排调试**：单独打开 `store_pair_left` / `store_pair_right` 只能看到半边。可起同一 HTTP 后打开 `templates/preview_store_pair.html`，用两个 iframe 同时加载左右模板并同步截图与标题参数，改 CSS 后点「刷新两屏」即可对照拼接缝与整体构图（勿用 `file://`）。
 

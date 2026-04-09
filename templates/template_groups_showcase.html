@@ -310,7 +310,7 @@
         return m;
       }
 
-      function tmplUrl(registryItem, imageHttpPath, title, subtitle) {
+      function tmplUrl(registryItem, imageHttpPath, title, subtitle, extraQuery) {
         var path = (registryItem.path || "").replace(/^\//, "");
         var q = new URLSearchParams();
         q.set("image", imageHttpPath);
@@ -319,6 +319,11 @@
         if (registryItem.url_params && typeof registryItem.url_params === "object") {
           Object.keys(registryItem.url_params).forEach(function (k) {
             q.set(k, String(registryItem.url_params[k]));
+          });
+        }
+        if (extraQuery && typeof extraQuery === "object") {
+          Object.keys(extraQuery).forEach(function (k) {
+            q.set(k, String(extraQuery[k]));
           });
         }
         return "/templates/" + path + "?" + q.toString();
@@ -345,7 +350,7 @@
         );
       }
 
-      function groupRow(gid, items, gi, reg, templateIds) {
+      function groupRow(gid, items, gi, reg, templateIds, slotQueries) {
         var cards = "";
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
@@ -356,7 +361,11 @@
             throw new Error("registry 中无模板编号 " + tid);
           }
           var imgPath = "/assets/screenshots/demo-app/" + String(item.file || "").replace(/^\//, "");
-          var url = tmplUrl(ritem, imgPath, item.title || "", item.subtitle || "");
+          var slotExtra =
+            slotQueries && slotQueries[i] && typeof slotQueries[i] === "object"
+              ? slotQueries[i]
+              : null;
+          var url = tmplUrl(ritem, imgPath, item.title || "", item.subtitle || "", slotExtra);
           cards += previewCard(item, i, gi, tid, url);
         }
         return (
@@ -461,12 +470,24 @@
           var html = "";
           for (var g = 0; g < groups.length; g++) {
             var grp = groups[g];
-            var tids = grp.template_ids;
+            var mode = grp.mode || "cartesian";
+            var tids;
+            var slotQueries = null;
+            if (mode === "sequential" && Array.isArray(grp.slots) && grp.slots.length) {
+              tids = grp.slots.map(function (s) {
+                return s.template_id;
+              });
+              slotQueries = grp.slots.map(function (s) {
+                return s.query && typeof s.query === "object" ? s.query : null;
+              });
+            } else {
+              tids = grp.template_ids;
+            }
             if (!Array.isArray(tids) || tids.length === 0) {
-              showErr("模板组 id=" + grp.id + " 缺少 template_ids。");
+              showErr("模板组 id=" + grp.id + " 缺少 template_ids 或 slots。");
               return;
             }
-            html += groupRow(grp.id, items, g, reg, tids);
+            html += groupRow(grp.id, items, g, reg, tids, slotQueries);
           }
           var main = document.getElementById("main");
           main.innerHTML = html;
