@@ -350,6 +350,26 @@
         );
       }
 
+      /**
+       * 双屏连贯（61+62）时，预览第 1、2 卡须用同一张截图（与 render_template_group sequential 的 input_index 一致）。
+       * 仅替换截图路径；标题/副标题仍用当前卡对应 items[i]。
+       */
+      function previewImagePathForSlot(i, items, templateIds) {
+        var item = items[i];
+        if (
+          i === 1 &&
+          templateIds &&
+          templateIds.length >= 2 &&
+          templateIds[0] === 61 &&
+          templateIds[1] === 62 &&
+          items[0] &&
+          items[0].file
+        ) {
+          item = items[0];
+        }
+        return "/assets/screenshots/demo-app/" + String(item.file || "").replace(/^\//, "");
+      }
+
       function groupRow(gid, items, gi, reg, templateIds, slotQueries) {
         var cards = "";
         for (var i = 0; i < items.length; i++) {
@@ -360,7 +380,7 @@
           if (!ritem) {
             throw new Error("registry 中无模板编号 " + tid);
           }
-          var imgPath = "/assets/screenshots/demo-app/" + String(item.file || "").replace(/^\//, "");
+          var imgPath = previewImagePathForSlot(i, items, templateIds);
           var slotExtra =
             slotQueries && slotQueries[i] && typeof slotQueries[i] === "object"
               ? slotQueries[i]
