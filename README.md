@@ -8,7 +8,7 @@
 |------|------|
 | **批量缩放** | 等比放大填满画布（cover），水平居中、**顶对齐**（保上方内容，底部可裁）；仅处理**输入目录下一层**文件，不递归子目录。 |
 | **格式** | 支持 `png` / `jpg` / `jpeg` / `webp` / `bmp`；带透明通道会先铺白再输出 JPEG。 |
-| **模板出图（实验性）** | Playwright + Chromium 加载 `templates/` 下 HTML，注入图片与标题等参数，截图输出 1080×1920。含纯色、渐变、color4bg 等预设（编号见 `templates/registry.json`）。 |
+| **模板出图（实验性）** | Playwright + Chromium 加载 `templates/` 下 HTML，注入图片与标题等参数，截图输出 1080×1920。含纯色、渐变、color4bg、**双屏连贯倾斜机框**（`61`/`62` 或 `--pair`）等预设（编号见 `templates/registry.json`）。 |
 
 ## 模板画廊预览
 
@@ -43,7 +43,7 @@ uv run python scripts/ensure_render_deps.py
 uv run python scripts/render_with_template.py -i photo.jpg --title "标题" -t 3
 ```
 
-`-t` 可为模板路径（如 `pure-color-dark/02.html`）或 **registry 编号**（1–60，含义见 [SKILL.md](SKILL.md)）。可选 `--bg`、`--title-color`、`--subtitle`、`--port` 等。
+`-t` 可为模板路径（如 `pure-color-dark/02.html`）或 **registry 编号**（1–62，含义见 [SKILL.md](SKILL.md)）。可选 `--bg`、`--title-color`、`--subtitle`、`--port` 等。双屏上架图可 **`--pair`** 一次生成 `<名>_pair_left` / `_pair_right` 两张，或用 `-t 61` / `-t 62` 单独出左/右屏。
 
 预览所有模板：在根目录执行 `python3 scripts/preview_gallery.py`，浏览器打开终端提示的 `templates/gallery.html` 地址（勿用 `file://` 直接打开）。
 

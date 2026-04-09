@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark；31–35 浅色 grid-array-light（color4bg Grid Array）；36–40 深色 grid-array-dark；41–45 浅色 triangles-mosaic-light（color4bg TrianglesMosaic）；46–50 深色 triangles-mosaic-dark；51–55 浅色 linear-gradient-light；56–60 深色 linear-gradient-dark。",
+  "description": "上架图 HTML 模板编号表。render_with_template.py 的 -t/--template 传入纯数字时按 id 解析为 path（相对 templates/）。1–5 浅色 pure-color；6–10 中深 pure-color-dark（默认白字）；11–15 浅色 blur-gradient-light；16–20 深色 blur-gradient-dark（模糊渐变+机框）；21–25 浅色 abstract-shape-light（color4bg Abstract Shape）；26–30 深色 abstract-shape-dark；31–35 浅色 grid-array-light（color4bg Grid Array）；36–40 深色 grid-array-dark；41–45 浅色 triangles-mosaic-light（color4bg TrianglesMosaic）；46–50 深色 triangles-mosaic-dark；51–55 浅色 linear-gradient-light；56–60 深色 linear-gradient-dark；61–62 双屏连贯星夜倾斜机框 store_pair_left / store_pair_right（亦可用 --pair 一次出两张）。",
   "templates": [
     {
       "id": 1,
@@ -361,6 +361,30 @@
       "path": "linear-gradient-dark/05.html",
       "label": "夜紫线性渐变",
       "default_bg": "#2D1B4E"
+    },
+    {
+      "id": 61,
+      "path": "store_pair_left.html",
+      "label": "双屏左-星夜倾斜机框",
+      "default_bg": "#0a1228",
+      "url_params": {
+        "rotateZ": "22",
+        "rotateY": "-12",
+        "rotateX": "6",
+        "perspective": "2200"
+      }
+    },
+    {
+      "id": 62,
+      "path": "store_pair_right.html",
+      "label": "双屏右-星夜倾斜机框",
+      "default_bg": "#0a1228",
+      "url_params": {
+        "rotateZ": "22",
+        "rotateY": "-12",
+        "rotateX": "6",
+        "perspective": "2200"
+      }
     }
   ]
 }

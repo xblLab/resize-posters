@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>双屏模板并排预览（左+右同时）</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a24;
+      color: #e8e8ed;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+    .hint {
+      font-size: 13px;
+      color: #9898a8;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .hint code { background: #2a2a36; padding: 2px 6px; border-radius: 4px; }
+    .form {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px 16px;
+      align-items: end;
+      margin-bottom: 16px;
+      max-width: 1200px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      color: #b0b0c0;
+    }
+    input[type="text"] {
+      padding: 8px 10px;
+      border: 1px solid #3a3a4a;
+      border-radius: 6px;
+      background: #12121a;
+      color: #f0f0f5;
+      font-size: 13px;
+      width: 100%;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover { background: #2563eb; }
+    .scale-wrap {
+      overflow: auto;
+      padding: 8px;
+      background: #0a0a10;
+      border-radius: 8px;
+      border: 1px solid #2a2a36;
+    }
+    .pair-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 0;
+      width: fit-content;
+      margin: 0 auto;
+      transform-origin: top center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .pair-row iframe {
+      width: 1080px;
+      height: 1920px;
+      border: 0;
+      display: block;
+      background: #000;
+    }
+    .labels {
+      display: flex;
+      width: fit-content;
+      margin: 0 auto 8px;
+      gap: 0;
+    }
+    .labels span {
+      width: 1080px;
+      text-align: center;
+      font-size: 12px;
+      color: #888898;
+    }
+  </style>
+</head>
+<body>
+  <h1>双屏模板并排预览</h1>
+  <p class="hint">
+    请在 skill 根目录启动 HTTP（如 <code>python3 scripts/preview_gallery.py</code> 或 <code>python3 -m http.server 8765</code>），再打开本页。
+    下方同时加载 <code>store_pair_left</code> 与 <code>store_pair_right</code>，改 HTML 后<strong>点「刷新两屏」</strong>或各 iframe 内 F5，即可对照拼接效果。
+    截图路径需为站点可访问地址（如 <code>/assets/screenshots/default_screenshot.jpg</code>）。
+  </p>
+
+  <div class="form">
+    <label>截图 URL（HTTP 路径）
+      <input type="text" id="image" value="/assets/screenshots/default_screenshot.jpg" />
+    </label>
+    <label>左屏标题 title
+      <input type="text" id="title" value="左屏标题" />
+    </label>
+    <label>副标题 subtitle（仅左屏）
+      <input type="text" id="subtitle" value="副标题" />
+    </label>
+    <label>右屏标题（URL 参数 title）
+      <input type="text" id="titleRight" value="右屏标题" />
+    </label>
+    <label>背景 bg（可选）
+      <input type="text" id="bg" placeholder="#0a1228" />
+    </label>
+  </div>
+  <div class="actions">
+    <button type="button" id="reload">刷新两屏</button>
+    <label style="flex-direction: row; align-items: center; gap: 8px;">
+      <span>预览缩放</span>
+      <input type="range" id="scale" min="15" max="50" value="28" />
+      <span id="scaleVal">28%</span>
+    </label>
+  </div>
+
+  <p class="hint" style="margin-top: 16px;">拼接缝应在中间：左图右缘与右图左缘为同一虚拟舞台的 1080px 线。</p>
+
+  <div class="labels">
+    <span>左 · store_pair_left.html</span>
+    <span>右 · store_pair_right.html</span>
+  </div>
+  <div class="scale-wrap">
+    <div class="pair-row" id="pairRow"></div>
+  </div>
+
+  <script>
+    (function () {
+      const leftFrame = document.createElement('iframe');
+      const rightFrame = document.createElement('iframe');
+      leftFrame.setAttribute('title', '左屏');
+      rightFrame.setAttribute('title', '右屏');
+      document.getElementById('pairRow').appendChild(leftFrame);
+      document.getElementById('pairRow').appendChild(rightFrame);
+
+      function enc(s) {
+        return encodeURIComponent(s);
+      }
+
+      function buildQuery(isRight) {
+        const image = document.getElementById('image').value.trim();
+        const title = document.getElementById('title').value;
+        const titleRight = document.getElementById('titleRight').value;
+        const subtitle = document.getElementById('subtitle').value;
+        const bg = document.getElementById('bg').value.trim();
+        const t = isRight ? titleRight : title;
+        let q = 'image=' + enc(image) + '&title=' + enc(t);
+        if (!isRight && subtitle) q += '&subtitle=' + enc(subtitle);
+        if (bg) q += '&bg=' + enc(bg);
+        return q;
+      }
+
+      function reload() {
+        const base = window.location.origin + window.location.pathname.replace(/[^/]+$/, '');
+        const leftUrl = base + 'store_pair_left.html?' + buildQuery(false);
+        const rightUrl = base + 'store_pair_right.html?' + buildQuery(true);
+        leftFrame.src = leftUrl;
+        rightFrame.src = rightUrl;
+      }
+
+      function applyScale() {
+        const p = Number(document.getElementById('scale').value) / 100;
+        document.getElementById('scaleVal').textContent = Math.round(p * 100) + '%';
+        document.getElementById('pairRow').style.transform = 'scale(' + p + ')';
+      }
+
+      document.getElementById('reload').addEventListener('click', reload);
+      document.getElementById('scale').addEventListener('input', applyScale);
+
+      reload();
+      applyScale();
+    })();
+  </script>
+</body>
+</html>

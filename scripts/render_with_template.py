@@ -30,6 +30,8 @@ TARGET_H = 1920
 SKILL_ROOT = Path(__file__).parent.parent.resolve()
 TEMPLATE_DIR = SKILL_ROOT / "templates"
 DEFAULT_TEMPLATE = "default.html"
+PAIR_LEFT_TEMPLATE = "store_pair_left.html"
+PAIR_RIGHT_TEMPLATE = "store_pair_right.html"
 # 静态资源根目录：需能访问 templates/ 与 assets/（如系列手机框模板）
 HTTP_ROOT = SKILL_ROOT
 RENDER_CACHE_DIR = SKILL_ROOT / ".render_cache"
@@ -91,6 +93,25 @@ def start_server(directory: Path, port: int = 0) -> tuple[int, socketserver.TCPS
     thread.start()
 
     return actual_port, server
+
+
+def pair_output_paths(image_path: Path, output_arg: Path | None) -> tuple[Path, Path]:
+    """双屏模板输出：`<stem>_pair_left` / `<stem>_pair_right`（与 -o 同目录、同扩展名）。"""
+    if output_arg is None:
+        out_dir = Path("output").resolve()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        return (
+            out_dir / f"{image_path.stem}_pair_left.jpg",
+            out_dir / f"{image_path.stem}_pair_right.jpg",
+        )
+    output_arg = output_arg.resolve()
+    parent = output_arg.parent
+    stem = output_arg.stem
+    suffix = output_arg.suffix or ".jpg"
+    return (
+        parent / f"{stem}_pair_left{suffix}",
+        parent / f"{stem}_pair_right{suffix}",
+    )
 
 
 def copy_image_to_serve_path(image_path: Path) -> str:
@@ -233,6 +254,21 @@ def main() -> None:
         dest="title_color",
         help="标题颜色（十六进制，如 #f5f5f7；不传则由模板根据背景亮度自动决定）",
     )
+    parser.add_argument(
+        "--pair",
+        action="store_true",
+        help=(
+            "一次生成双屏连贯上架图（左 store_pair_left + 右 store_pair_right），"
+            "输出 <名>_pair_left / _pair_right；与 -t 互斥（指定 --pair 时忽略 -t）"
+        ),
+    )
+    parser.add_argument(
+        "--title-right",
+        type=str,
+        default="",
+        dest="title_right",
+        help="与 --pair 联用：右屏标题（默认与 --title 相同）",
+    )
     args = parser.parse_args()
 
     image_path = args.image.resolve()
@@ -251,6 +287,45 @@ def main() -> None:
     print(f"启动本地服务器...")
     port, server = start_server(HTTP_ROOT, args.port)
     print(f"服务器运行在 http://127.0.0.1:{port}")
+
+    if args.pair:
+        if args.template.strip() != DEFAULT_TEMPLATE:
+            print(
+                "提示: 已指定 --pair，将使用 store_pair_left / store_pair_right，忽略 -t。",
+                file=sys.stderr,
+            )
+        left_out, right_out = pair_output_paths(image_path, args.output)
+        title_right = args.title_right.strip() or args.title
+        try:
+            print(f"正在渲染双屏: {image_path.name}")
+            render_with_playwright(
+                image_path=image_path,
+                template_name=PAIR_LEFT_TEMPLATE,
+                output_path=left_out,
+                server_port=port,
+                title=args.title,
+                subtitle=args.subtitle,
+                bg=args.bg,
+                title_color=args.title_color,
+                extra_query=None,
+            )
+            print(f"左屏完成: {left_out}")
+            render_with_playwright(
+                image_path=image_path,
+                template_name=PAIR_RIGHT_TEMPLATE,
+                output_path=right_out,
+                server_port=port,
+                title=title_right,
+                subtitle="",
+                bg=args.bg,
+                title_color=args.title_color,
+                extra_query=None,
+            )
+            print(f"右屏完成: {right_out}")
+        finally:
+            server.shutdown()
+            print("服务器已关闭")
+        return
 
     template_name, registry_extra = resolve_template(args.template)
 

@@ -2,7 +2,7 @@
 name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
-  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
+  HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`，`61`–`62` 双屏连贯 `store_pair_left` / `store_pair_right`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设；双屏一键出图可用 `--pair`。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -102,6 +102,8 @@ python3 -m http.server 8765
 
 浏览器打开：`http://127.0.0.1:<端口>/templates/gallery.html`（`preview_gallery.py` 默认端口 8765 时即 `http://127.0.0.1:8765/templates/gallery.html`）。
 
+**双屏模板并排调试**：单独打开 `store_pair_left` / `store_pair_right` 只能看到半边。可起同一 HTTP 后打开 `templates/preview_store_pair.html`，用两个 iframe 同时加载左右模板并同步截图与标题参数，改 CSS 后点「刷新两屏」即可对照拼接缝与整体构图（勿用 `file://`）。
+
 参数说明：
 
 - `-i, --image`: 输入图片路径（必需）
@@ -112,6 +114,8 @@ python3 -m http.server 8765
 - `--bg`: 背景色（如 `#0d0d12`），覆盖模板预设；纯色系列不传则用该编号默认色
 - `--title-color`: 标题颜色（如 `#f5f5f7`）；不传则由模板按背景亮度自动选深/浅字
 - `--port`: 本地服务器端口，默认 8765
+- `--pair`: 一次生成双屏连贯上架图（固定使用 `store_pair_left.html` 与 `store_pair_right.html`），输出 `<名>_pair_left` 与 `<名>_pair_right`（与 `-o` 同目录、同扩展名）；与 `-t` 互斥（指定 `--pair` 时忽略 `-t`）
+- `--title-right`: 与 `--pair` 联用，右屏标题（默认与 `--title` 相同）
 
 ### 模板编号表（纯色 + 手机框，`pure-color/01.html`–`05.html`）
 
@@ -257,11 +261,20 @@ python3 -m http.server 8765
 | 59 | `linear-gradient-dark/04.html` | `#0D3D3A` | 松涛 |
 | 60 | `linear-gradient-dark/05.html` | `#2D1B4E` | 夜紫 |
 
+### 模板编号表（双屏连贯 + 倾斜机框，`store_pair_left.html` / `store_pair_right.html`）
+
+同一截图、同一套 3D 倾斜参数，虚拟舞台宽 2160px，左右各裁 1080×1920，拼合后机框与星空在接缝处连续；左屏顶左标题+副标题，右屏顶中标题。也可用 **`--pair`** 一次输出两张（见下文参数）。编号默认带 `url_params`（透视与旋转），可用 URL 或 CLI 覆盖。
+
+| 编号 | 文件 | 预设 `--bg` | 说明 |
+|------|------|---------------|------|
+| 61 | `store_pair_left.html` | `#0a1228` | 双屏左 |
+| 62 | `store_pair_right.html` | `#0a1228` | 双屏右 |
+
 权威数据与后续扩展：`templates/registry.json`。
 
 ## 模板系统
 
-模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`linear-gradient-light/`、`linear-gradient-dark/`（CSS 线性渐变底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）、`triangles-mosaic-light/`、`triangles-mosaic-dark/`（color4bg TrianglesMosaic）；均为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
+模板存放在 `templates/` 目录，是标准 HTML 文件。内置示例：`default.html`（大图+底部标题）；`series_phone.html` 与 `pure-color/`、`pure-color-dark/`（纯色底）、`linear-gradient-light/`、`linear-gradient-dark/`（CSS 线性渐变底）、`blur-gradient-light/`、`blur-gradient-dark/`（模糊渐变底）、`abstract-shape-light/`、`abstract-shape-dark/`（color4bg Abstract Shape）、`grid-array-light/`、`grid-array-dark/`（color4bg Grid Array）、`triangles-mosaic-light/`、`triangles-mosaic-dark/`（color4bg TrianglesMosaic）；`store_pair_left.html` / `store_pair_right.html` 为双屏连贯星夜底+倾斜机框（见上表）。多数为顶部标题、中间 `assets/devices/mate70pro/Mate70-Pro.png` 机框；编号与 `registry.json` 一致。
 
 **模板数据传递方式**：通过 URL 查询参数传递
 
@@ -270,6 +283,9 @@ python3 -m http.server 8765
 - `subtitle`: 副标题文字
 - `bg`（可选）：背景色，如 `#1a1a2e`（多数模板作纯色底；`linear-gradient-*` 模板在传入时覆盖为纯色，不传则保留该文件内建渐变）
 - `titleColor` 或 `title_color`（可选）：标题色；不传则浅色背景时自动用深色字（与 CLI `--title-color` 对应）
+- `subtitleColor` 或 `subtitle_color`（可选，仅 `store_pair_left`）：副标题色
+- `rotateZ` / `rotateY` / `rotateX`（可选，度；可带或不带 `deg`）：倾斜机框 3D 旋转，默认约 `22` / `-12` / `6`
+- `perspective`（可选）：透视距离，默认 `2200`（可写 `2200` 或 `2200px`）
 
 **示例模板结构** (`templates/default.html`)：
 
@@ -367,4 +383,16 @@ python3 scripts/render_with_template.py \
   -o ~/Desktop/poster.jpg \
   --title "旅行日记" \
   --subtitle "记录美好时光"
+
+# 双屏连贯（一次两张；副标题仅左屏）
+python3 scripts/render_with_template.py \
+  -i shot.jpg --pair \
+  --title "每晚睡得更好" \
+  --title-right "用舒缓声音放松" \
+  --subtitle "睡眠故事、白噪音与冥想" \
+  -o ~/Desktop/store.jpg
+
+# 单独渲染双屏之一（等价于编号 61 / 62）
+python3 scripts/render_with_template.py -i shot.jpg -t 61 --title "左屏标题" --subtitle "左屏副标题" -o ~/Desktop/left.jpg
+python3 scripts/render_with_template.py -i shot.jpg -t 62 --title "右屏标题" -o ~/Desktop/right.jpg
 ```
