@@ -19,6 +19,18 @@
         { "template_id": 14, "input_index": 2 },
         { "template_id": 14, "input_index": 3 }
       ]
+    },
+    {
+      "id": 3,
+      "name": "靛青电影感+双屏连贯",
+      "mode": "sequential",
+      "slots": [
+        { "template_id": 61, "input_index": 0, "query": { "bgPreset": "blur-dark-19" } },
+        { "template_id": 62, "input_index": 0, "query": { "bgPreset": "blur-dark-19" } },
+        { "template_id": 19, "input_index": 1 },
+        { "template_id": 19, "input_index": 2 },
+        { "template_id": 19, "input_index": 3 }
+      ]
     }
   ]
 }

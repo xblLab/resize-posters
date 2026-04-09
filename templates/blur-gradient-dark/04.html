@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="bg-blur-dark-19">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, initial-scale=1.0">
     <title>Series — Blur Dark 04</title>
     <!-- template-id: 19 preset-bg: #0A0E18 -->
+    <link rel="stylesheet" href="/templates/backgrounds/blur-gradient-dark-04.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -18,10 +19,6 @@
             --screen-width: 92.99%;
             --screen-height: 92.96%;
             --screen-radius: 4.2%;
-            --poster-bg: #0A0E18;
-            --blob-1: #2563c8;
-            --blob-2: #7b2cbf;
-            --blob-3: #0d7377;
         }
 
         html { background: var(--poster-bg); }
@@ -33,46 +30,6 @@
             position: relative;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: var(--poster-bg);
-        }
-
-        .bg-blur {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .bg-blur .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(115px);
-            -webkit-filter: blur(115px);
-            opacity: 0.8;
-        }
-
-        .bg-blur .blob-1 {
-            width: 80%;
-            height: 62%;
-            right: -18%;
-            top: -20%;
-            background: var(--blob-1);
-        }
-
-        .bg-blur .blob-2 {
-            width: 86%;
-            height: 56%;
-            left: -38%;
-            bottom: 2%;
-            background: var(--blob-2);
-        }
-
-        .bg-blur .blob-3 {
-            width: 66%;
-            height: 72%;
-            left: 20%;
-            top: 26%;
-            background: var(--blob-3);
         }
 
         .poster {

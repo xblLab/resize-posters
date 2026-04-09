@@ -1,15 +1,15 @@
 /**
  * blur-gradient-light/04.html（registry 14）背景层：三色 blob + 模糊。
- * 与 store_pair_* 的 bgPreset=blur-light-04 共用，避免样式漂移。
+ * 与 store_pair_* 的 bgPreset=blur-light-04 共用。需 html.bg-blur-light-04 以免与 blur-dark 并存时冲突。
  */
-:root {
+html.bg-blur-light-04 {
     --poster-bg: #FBF5F8;
     --blob-1: #f8a8c8;
     --blob-2: #f5d4e8;
     --blob-3: #e1bee7;
 }
 
-.bg-blur {
+html.bg-blur-light-04 .bg-blur {
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -17,7 +17,7 @@
     overflow: hidden;
 }
 
-.bg-blur .blob {
+html.bg-blur-light-04 .bg-blur .blob {
     position: absolute;
     border-radius: 50%;
     filter: blur(98px);
@@ -25,7 +25,7 @@
     opacity: 0.85;
 }
 
-.bg-blur .blob-1 {
+html.bg-blur-light-04 .bg-blur .blob-1 {
     width: 82%;
     height: 58%;
     left: -20%;
@@ -33,7 +33,7 @@
     background: var(--blob-1);
 }
 
-.bg-blur .blob-2 {
+html.bg-blur-light-04 .bg-blur .blob-2 {
     width: 68%;
     height: 64%;
     right: -25%;
@@ -41,7 +41,7 @@
     background: var(--blob-2);
 }
 
-.bg-blur .blob-3 {
+html.bg-blur-light-04 .bg-blur .blob-3 {
     width: 72%;
     height: 52%;
     left: 25%;

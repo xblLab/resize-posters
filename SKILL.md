@@ -3,7 +3,7 @@ name: resize-posts-1080x1920
 description: |
   批量把目录里的图片统一成 1080×1920 竖版：等比放大做 cover（可能裁左右或底部）、水平居中、顶对齐保上方内容；支持 png/jpg/jpeg/webp/bmp，RGBA 先铺白再输出 JPEG。只要用户提到整目录素材、posts 出图、上架/应用商店竖版海报、Story 竖图、1080×1920、9:16、竖屏封面、批量缩放且接受裁切（尤其保顶）——即使没说脚本名——就应使用本 skill 并执行 bundled 脚本，而不是用 Pillow 手写一遍或猜尺寸。不要用本 skill：只要「放进画布里不裁切」的 fit/letterbox、只压缩体积（如 TinyPNG API）、不要改分辨率、只要单张交互裁图、或需要递归处理所有子文件夹（当前脚本只处理输入目录直接子文件）。
   HTML 模板出图（`scripts/render_with_template.py`）：上架纯色+机框可用 `-t` 传数字选预设（`1`–`5` 浅色 `pure-color`，`6`–`10` 中深 `pure-color-dark`、默认白字，`11`–`15` 浅色模糊渐变 `blur-gradient-light`，`16`–`20` 深色模糊渐变 `blur-gradient-dark`，`21`–`25` 浅色 `abstract-shape-light`（color4bg Abstract Shape），`26`–`30` 深色 `abstract-shape-dark`，`31`–`35` 浅色 `grid-array-light`（color4bg Grid Array），`36`–`40` 深色 `grid-array-dark`，`41`–`45` 浅色 `triangles-mosaic-light`（color4bg TrianglesMosaic），`46`–`50` 深色 `triangles-mosaic-dark`，`51`–`55` 浅色 `linear-gradient-light`，`56`–`60` 深色 `linear-gradient-dark`，`61`–`62` 双屏连贯 `store_pair_left` / `store_pair_right`；登记在 `templates/registry.json`），亦可用路径如 `pure-color-dark/02.html`、`linear-gradient-light/01.html`；可选 `--bg`、`--title-color` 覆盖预设；双屏一键出图可用 `--pair`。渲染前须先跑 `scripts/ensure_render_deps.py`（先检测再装，优先 uv，见正文「依赖安装」）。
-  模板组（`templates/template_groups.json`）：**cartesian**（默认）每组 `template_ids`（1–5 个编号），每张输入图 × 每个模板；**sequential** 用 `slots` 按槽顺序出图，每槽含 `template_id`、`input_index`（输入图排序后的下标）、可选 `query`（合并进 URL，如双屏槽传 `bgPreset=blur-light-04` 与 registry 14 蔷薇渐变底一致）。`scripts/render_template_group.py -g <组id>`；cartesian 输出 `<stem>_g<组id>_t<模板号>.jpg`，sequential 输出 `<stem>_g<组id>_s<槽序号>_t<模板号>.jpg`；`--list-groups` 列出全部组。store_pair 模板支持 URL 参数 `bgPreset=blur-light-04`（与 `blur-gradient-light/04.html` 同背景层）。
+  模板组（`templates/template_groups.json`）：**cartesian**（默认）每组 `template_ids`（1–5 个编号），每张输入图 × 每个模板；**sequential** 用 `slots` 按槽顺序出图，每槽含 `template_id`、`input_index`（输入图排序后的下标）、可选 `query`（合并进 URL，如双屏槽传 `bgPreset=blur-light-04` 与 registry 14 蔷薇渐变底一致，或 `bgPreset=blur-dark-19` 与 registry 19 靛青深色底一致）。`scripts/render_template_group.py -g <组id>`；cartesian 输出 `<stem>_g<组id>_t<模板号>.jpg`，sequential 输出 `<stem>_g<组id>_s<槽序号>_t<模板号>.jpg`；`--list-groups` 列出全部组。store_pair 模板支持 URL 参数 `bgPreset=blur-light-04` / `bgPreset=blur-dark-19`（与 `blur-gradient-light/04.html`、`blur-gradient-dark/04.html` 同背景层）。
 ---
 
 # 目录图片 → 1080×1920（顶对齐 cover）
@@ -90,10 +90,13 @@ python3 scripts/render_with_template.py \
 
 组 id **2**（「蔷薇渐变+双屏连贯」）为 sequential：槽 0–1 为双屏左/右（同一 `input_index: 0`，背景 `bgPreset=blur-light-04`），槽 2–4 为模板 14，分别对应输入图下标 1、2、3。需至少 **4** 张图（例如 `1.jpg` 作双屏、`2.jpg`–`4.jpg` 作三张单卡）。
 
+组 id **3**（「靛青电影感+双屏连贯」）为 sequential：槽 0–1 为双屏左/右（同一 `input_index: 0`，背景 `bgPreset=blur-dark-19`），槽 2–4 为模板 19（与 `blur-gradient-dark/04.html` 靛青深色 blob 一致），分别对应输入图下标 1、2、3。需至少 **4** 张图，结构与组 2 相同。
+
 ```bash
 python3 scripts/render_template_group.py -i photo.jpg -g 1 --title "标题"
 python3 scripts/render_template_group.py -i assets/screenshots/demo-app -g 1 --title "标题" -o output/demo-app/
 python3 scripts/render_template_group.py -i path/to/four_or_more_images/ -g 2 --title "标题" -o output/campaign/
+python3 scripts/render_template_group.py -i path/to/four_or_more_images/ -g 3 --title "标题" -o output/campaign/
 ```
 
 ### 预览所有模板（浏览器）

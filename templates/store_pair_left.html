@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=1080, initial-scale=1.0">
     <title>Store pair — left</title>
     <link rel="stylesheet" href="/templates/backgrounds/blur-gradient-light-04.css">
+    <link rel="stylesheet" href="/templates/backgrounds/blur-gradient-dark-04.css">
     <style>
         * {
             margin: 0;
@@ -28,6 +29,10 @@
             background: var(--poster-bg);
         }
 
+        html.bg-blur-dark-19 {
+            background: var(--poster-bg);
+        }
+
         body {
             width: 1080px;
             height: 1920px;
@@ -41,6 +46,10 @@
             background: var(--poster-bg);
         }
 
+        html.bg-blur-dark-19 body {
+            background: var(--poster-bg);
+        }
+
         #stage-bg-blur-layer {
             display: none;
         }
@@ -50,6 +59,14 @@
         }
 
         html.bg-blur-light-04 #stage-bg-blur-layer {
+            display: block;
+        }
+
+        html.bg-blur-dark-19 #stage-bg-star {
+            display: none;
+        }
+
+        html.bg-blur-dark-19 #stage-bg-blur-layer {
             display: block;
         }
 
@@ -234,6 +251,11 @@
             if (bg) {
                 document.documentElement.style.setProperty('--poster-bg', bg);
             }
+        } else if (bgPreset === 'blur-dark-19') {
+            document.documentElement.classList.add('bg-blur-dark-19');
+            if (bg) {
+                document.documentElement.style.setProperty('--poster-bg', bg);
+            }
         }
 
         applyStorePairPhoneLayout(document.documentElement, storePairPhoneOverridesFromParams(params));
@@ -241,7 +263,7 @@
         document.getElementById('title-text').textContent = title;
         document.getElementById('subtitle-text').textContent = subtitle;
 
-        if (bg && bgPreset !== 'blur-light-04') {
+        if (bg && bgPreset !== 'blur-light-04' && bgPreset !== 'blur-dark-19') {
             document.documentElement.style.setProperty('--poster-bg-base', bg);
         }
 
@@ -255,6 +277,9 @@
         const base = (function () {
             if (bgPreset === 'blur-light-04') {
                 return bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg').trim() || '#FBF5F8';
+            }
+            if (bgPreset === 'blur-dark-19') {
+                return bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg').trim() || '#0A0E18';
             }
             return bg || getComputedStyle(document.documentElement).getPropertyValue('--poster-bg-base').trim() || '#0a1228';
         })();

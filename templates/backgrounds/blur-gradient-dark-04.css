@@ -1,0 +1,60 @@
+/**
+ * blur-gradient-dark/04.html（registry 19）背景层：靛青深色 blob + 模糊。
+ * 与 store_pair_* 的 bgPreset=blur-dark-19 共用。需 html.bg-blur-dark-19。
+ */
+html.bg-blur-dark-19 {
+    --poster-bg: #0A0E18;
+    --blob-1: #2563c8;
+    --blob-2: #7b2cbf;
+    --blob-3: #0d7377;
+}
+
+html.bg-blur-dark-19 .bg-blur {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+html.bg-blur-dark-19 .bg-blur .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(115px);
+    -webkit-filter: blur(115px);
+    opacity: 0.8;
+}
+
+html.bg-blur-dark-19 .bg-blur .blob-1 {
+    width: 80%;
+    height: 62%;
+    right: -18%;
+    top: -20%;
+    background: var(--blob-1);
+}
+
+html.bg-blur-dark-19 .bg-blur .blob-2 {
+    width: 86%;
+    height: 56%;
+    left: -38%;
+    bottom: 2%;
+    background: var(--blob-2);
+}
+
+html.bg-blur-dark-19 .bg-blur .blob-3 {
+    width: 66%;
+    height: 72%;
+    left: 20%;
+    top: 26%;
+    background: var(--blob-3);
+}
+
+/* 轻量电影感暗角（仅叠在 blob 层之上） */
+html.bg-blur-dark-19 .bg-blur::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: inset 0 0 200px 80px rgba(0, 0, 0, 0.42);
+}
