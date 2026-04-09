@@ -112,6 +112,8 @@ python3 -m http.server 8765
 
 浏览器打开：`http://127.0.0.1:<端口>/templates/gallery.html`（`preview_gallery.py` 默认端口 8765 时即 `http://127.0.0.1:8765/templates/gallery.html`）。
 
+**模板组列表预览**：`templates/template_groups_showcase.html` 展示已登记的模板组（仅组 ID）；每组 5 个 iframe 按 `template_groups.json` 内 `template_ids` 与 `registry.json` 加载真实 HTML 模板，截图与标题分别来自 `assets/screenshots/demo-app` 与 `preview_title.json`。须通过 HTTP 打开，例如 `http://127.0.0.1:8765/templates/template_groups_showcase.html`（勿用 `file://`）。
+
 **双屏模板并排调试**：单独打开 `store_pair_left` / `store_pair_right` 只能看到半边。可起同一 HTTP 后打开 `templates/preview_store_pair.html`，用两个 iframe 同时加载左右模板并同步截图与标题参数，改 CSS 后点「刷新两屏」即可对照拼接缝与整体构图（勿用 `file://`）。
 
 参数说明：

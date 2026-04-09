@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>模板组 · 预览</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Noto+Serif+SC:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-subtle: #f4f3f0;
+      --text: #1a1a1e;
+      --text-muted: #5c5a57;
+      --accent: #b8860b;
+      --accent-soft: rgba(184, 134, 11, 0.12);
+      --border: rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+      --font-display: "Noto Serif SC", serif;
+      --font-ui: "DM Sans", system-ui, sans-serif;
+      --frame-bg: #eceae6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    header {
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 28px;
+    }
+
+    header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 600;
+      margin: 0 0 10px;
+      letter-spacing: 0.02em;
+    }
+
+    header .hint {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      max-width: 56ch;
+    }
+
+    header .hint code {
+      font-size: 0.82em;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .err {
+      display: none;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+    }
+
+    .err.show { display: block; }
+
+    .empty {
+      color: var(--text-muted);
+      padding: 32px 0;
+    }
+
+    .group-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px 32px;
+      align-items: stretch;
+      margin-bottom: 48px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      animation: rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: calc(var(--gi) * 90ms);
+    }
+
+    .group-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .group-id {
+      flex: 0 0 auto;
+      min-width: 88px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: 8px;
+    }
+
+    .group-id span {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .group-id strong {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 3.5rem);
+      font-weight: 600;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .previews {
+      flex: 1 1 280px;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 4px 4px 16px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .previews::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .previews::-webkit-scrollbar-track {
+      background: var(--bg-subtle);
+      border-radius: 3px;
+    }
+
+    .previews::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+    }
+
+    .preview-card {
+      flex: 0 0 auto;
+      width: 200px;
+      scroll-snap-align: start;
+      opacity: 0;
+      animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: calc(var(--gi) * 90ms + 120ms + var(--ci) * 55ms);
+    }
+
+    .preview-card .meta {
+      margin-top: 8px;
+      padding: 0 2px;
+    }
+
+    .preview-card .meta h3 {
+      margin: 0 0 2px;
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .preview-card .meta p {
+      margin: 0;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /*
+     * 1080×1920 模板缩放到预览宽度：scale = 宽/1080。
+     * 缩放必须加在外层 div 上，不要直接写在 iframe 上——否则 WebKit/Chromium 常出现整块黑屏合成 bug。
+     */
+    .preview-frame {
+      --fw: 200px;
+      --scale: 0.1851851852; /* 200/1080 */
+      position: relative;
+      width: var(--fw);
+      height: calc(var(--fw) * 1920 / 1080);
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--frame-bg);
+      isolation: isolate;
+    }
+
+    .preview-frame-scale {
+      width: 1080px;
+      height: 1920px;
+      transform: scale(var(--scale));
+      transform-origin: top left;
+      backface-visibility: hidden;
+    }
+
+    .preview-frame iframe {
+      display: block;
+      width: 1080px;
+      height: 1920px;
+      border: 0;
+      pointer-events: none;
+    }
+
+    .preview-frame .preview-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .preview-frame.is-loaded .preview-placeholder {
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .group-row {
+        flex-wrap: nowrap;
+      }
+
+      .preview-card {
+        width: 200px;
+      }
+
+      .preview-frame {
+        --fw: 200px;
+        --scale: 0.1851851852; /* 200/1080 */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>模板组</h1>
+    </header>
+    <div class="err" id="err"></div>
+    <main id="main"></main>
+  </div>
+
+  <script>
+    (function () {
+      var PREVIEW_JSON = "/assets/screenshots/demo-app/preview_title.json";
+      var GROUPS_JSON = "./template_groups.json";
+      var REGISTRY_JSON = "./registry.json";
+
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function escAttr(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;");
+      }
+
+      /** registry id → { path, url_params } */
+      function registryMap(data) {
+        var m = {};
+        (data.templates || []).forEach(function (t) {
+          if (t.id != null) m[t.id] = t;
+        });
+        return m;
+      }
+
+      function tmplUrl(registryItem, imageHttpPath, title, subtitle) {
+        var path = (registryItem.path || "").replace(/^\//, "");
+        var q = new URLSearchParams();
+        q.set("image", imageHttpPath);
+        q.set("title", title);
+        q.set("subtitle", subtitle);
+        if (registryItem.url_params && typeof registryItem.url_params === "object") {
+          Object.keys(registryItem.url_params).forEach(function (k) {
+            q.set(k, String(registryItem.url_params[k]));
+          });
+        }
+        return "/templates/" + path + "?" + q.toString();
+      }
+
+      /**
+       * 组内多张模板时按卡片下标循环使用；单模板则五张均用该模板。
+       */
+      function templateIdForCard(templateIds, cardIndex) {
+        if (!templateIds.length) return null;
+        return templateIds[cardIndex % templateIds.length];
+      }
+
+      function previewCard(item, ci, gi, templateId, previewUrl) {
+        var title = item.title || "";
+        var sub = item.subtitle || "";
+        var u = escAttr(previewUrl);
+        return (
+          '<article class="preview-card" style="--ci:' + ci + '" aria-label="' + esc(title) + '">' +
+          '<div class="preview-frame" data-preview-url="' + u + '" data-template-id="' + esc(String(templateId)) + '">' +
+          '<div class="preview-placeholder">划入后加载模板预览</div>' +
+          "</div>" +
+          "</article>"
+        );
+      }
+
+      function groupRow(gid, items, gi, reg, templateIds) {
+        var cards = "";
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          var tid = templateIdForCard(templateIds, i);
+          if (tid == null) continue;
+          var ritem = reg[tid];
+          if (!ritem) {
+            throw new Error("registry 中无模板编号 " + tid);
+          }
+          var imgPath = "/assets/screenshots/demo-app/" + String(item.file || "").replace(/^\//, "");
+          var url = tmplUrl(ritem, imgPath, item.title || "", item.subtitle || "");
+          cards += previewCard(item, i, gi, tid, url);
+        }
+        return (
+          '<section class="group-row" style="--gi:' + gi + '" aria-labelledby="gid-' + gid + '">' +
+          '<div class="group-id" id="gid-' + gid + '">' +
+          "<span>组</span>" +
+          "<strong>" + esc(String(gid)) + "</strong>" +
+          "</div>" +
+          '<div class="previews">' + cards + "</div>" +
+          "</section>"
+        );
+      }
+
+      function mountIframe(container) {
+        if (container.querySelector(".preview-frame-scale")) return;
+        var raw = container.getAttribute("data-preview-url");
+        if (!raw) return;
+        var wrap = document.createElement("div");
+        wrap.className = "preview-frame-scale";
+        var iframe = document.createElement("iframe");
+        iframe.setAttribute("src", raw.replace(/&amp;/g, "&"));
+        iframe.setAttribute(
+          "title",
+          "模板 " + (container.getAttribute("data-template-id") || "")
+        );
+        wrap.appendChild(iframe);
+        container.appendChild(wrap);
+        container.classList.add("is-loaded");
+      }
+
+      function unmountIframe(container) {
+        var wrap = container.querySelector(".preview-frame-scale");
+        if (wrap) wrap.remove();
+        container.classList.remove("is-loaded");
+      }
+
+      function setupLazyPreviews(root) {
+        var previews = root.querySelectorAll(".preview-frame[data-preview-url]");
+        if (!previews.length) return;
+        if (!("IntersectionObserver" in window)) {
+          previews.forEach(function (el) {
+            mountIframe(el);
+          });
+          return;
+        }
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              var el = entry.target;
+              if (entry.isIntersecting) {
+                mountIframe(el);
+              } else {
+                unmountIframe(el);
+              }
+            });
+          },
+          { root: null, rootMargin: "120px 0px 240px 0px", threshold: 0 }
+        );
+        previews.forEach(function (el) {
+          io.observe(el);
+        });
+      }
+
+      function showErr(msg) {
+        var el = document.getElementById("err");
+        el.textContent = msg;
+        el.classList.add("show");
+      }
+
+      Promise.all([
+        fetch(GROUPS_JSON, { cache: "no-store" }).then(function (r) {
+          if (!r.ok) throw new Error("template_groups.json HTTP " + r.status);
+          return r.json();
+        }),
+        fetch(PREVIEW_JSON, { cache: "no-store" }).then(function (r) {
+          if (!r.ok) throw new Error("preview_title.json HTTP " + r.status);
+          return r.json();
+        }),
+        fetch(REGISTRY_JSON, { cache: "no-store" }).then(function (r) {
+          if (!r.ok) throw new Error("registry.json HTTP " + r.status);
+          return r.json();
+        }),
+      ])
+        .then(function (results) {
+          var tg = results[0];
+          var pt = results[1];
+          var regData = results[2];
+          var reg = registryMap(regData);
+          var groups = (tg.groups || []).slice().sort(function (a, b) {
+            return (a.id || 0) - (b.id || 0);
+          });
+          var items = pt.items || [];
+          if (!groups.length) {
+            document.getElementById("main").innerHTML =
+              '<p class="empty">template_groups.json 中暂无模板组。</p>';
+            return;
+          }
+          if (!items.length) {
+            showErr("preview_title.json 中无 items。");
+            return;
+          }
+          var html = "";
+          for (var g = 0; g < groups.length; g++) {
+            var grp = groups[g];
+            var tids = grp.template_ids;
+            if (!Array.isArray(tids) || tids.length === 0) {
+              showErr("模板组 id=" + grp.id + " 缺少 template_ids。");
+              return;
+            }
+            html += groupRow(grp.id, items, g, reg, tids);
+          }
+          var main = document.getElementById("main");
+          main.innerHTML = html;
+          setupLazyPreviews(main);
+        })
+        .catch(function (e) {
+          showErr("加载失败：" + (e && e.message ? e.message : String(e)));
+        });
+    })();
+  </script>
+</body>
+</html>
