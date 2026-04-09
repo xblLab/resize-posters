@@ -40,7 +40,7 @@
                 topPct: 5.579,
                 widthPct: 92.99,
                 heightPx: 1440,
-                slotTopAdjustPx: 54,
+                slotTopAdjustPx: 60,
             },
         },
     };
